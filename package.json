@@ -3,6 +3,20 @@
   "version": "1.2.1",
   "description": "StreamCatch — Universal Video, Audio, Playlist & Bulk Media Downloader Studio",
   "main": "helper/server.py",
+  "bin": {
+    "streamcatch": "./bin/cli.js"
+  },
+  "files": [
+    "bin",
+    "extension",
+    "helper",
+    "scripts",
+    "build_ui.py",
+    "START_STREAMCATCH_WINDOWS.bat",
+    "START_STREAMCATCH_MAC_LINUX.sh",
+    "LICENSE",
+    "README.md"
+  ],
   "scripts": {
     "setup": "node scripts/setup.js",
     "postinstall": "node scripts/setup.js",

@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/soahimrahman/StreamCatch/releases"><img src="https://img.shields.io/badge/version-v1.2.1-7157e9?style=for-the-badge&logo=semver&logoColor=white" alt="Version 1.2.1" /></a>
   <a href="https://developer.chrome.com/docs/extensions/mv3/intro/"><img src="https://img.shields.io/badge/Manifest-V3-44dab2?style=for-the-badge&logo=googlechrome&logoColor=black" alt="Manifest V3" /></a>
-  <a href="package.json"><img src="https://img.shields.io/badge/npm-automated%20setup-CB3837?style=for-the-badge&logo=npm&logoColor=white" alt="npm Support" /></a>
+  <a href="#-option-1-one-command-global-npm-install-recommended"><img src="https://img.shields.io/badge/npm%20install-soahimrahman%2FStreamCatch-CB3837?style=for-the-badge&logo=npm&logoColor=white" alt="npm install" /></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.8+-3776ab?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.8+" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="MIT License" /></a>
   <a href="https://github.com/soahimrahman/StreamCatch/actions"><img src="https://img.shields.io/badge/Tests-Passing-brightgreen?style=for-the-badge&logo=githubactions&logoColor=white" alt="CI Status" /></a>
@@ -86,53 +86,78 @@ flowchart LR
 ## 🚀 Quick Start Guide
 
 ### Prerequisites
-1. **Python 3.8 or higher** installed. *(Check "Add python.exe to PATH" during installation).*
+1. **Python 3.8 or higher** installed. *(Ensure "Add python.exe to PATH" was selected during install).*
 2. **Google Chrome 116+**, **Microsoft Edge**, **Brave**, or any Chromium browser supporting Manifest V3.
-3. *(Optional)* **Node.js & npm** for automated one-command installation and running.
 
 ---
 
-### Method A: Automated Setup with `npm` (Recommended)
+### 📦 Option 1: One-Command Global NPM Install (Recommended)
 
-If you have Node.js / npm installed, StreamCatch can be installed and launched with two simple commands:
+You can install and run StreamCatch anywhere with **one npm command**:
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/soahimrahman/StreamCatch.git
-cd StreamCatch
-
-# 2. Automatically install all dependencies (yt-dlp, FFmpeg, etc.)
-npm install
-
-# 3. Launch the download engine
-npm start
+# Install globally via npm
+npm install -g soahimrahman/StreamCatch
 ```
 
-> [!TIP]
-> `npm install` automatically triggers the setup script, detects your Python runtime (`py -3`, `python3`, or `python`), and installs all required media packages.
+Or run it on-demand with **`npx`** without even installing:
 
-#### Available `npm` Commands:
+```bash
+npx github:soahimrahman/StreamCatch
+```
+
+#### Running the CLI:
+Once installed, start the local engine simply by running:
+```bash
+streamcatch
+```
+
+#### Handy CLI Commands:
 
 | Command | Action |
 | :--- | :--- |
-| `npm install` *(or `npm run setup`)* | Automatically installs/verifies `yt-dlp` and `imageio-ffmpeg` dependencies |
-| `npm start` | Launches the local download engine on `http://127.0.0.1:8735` |
-| `npm test` | Runs the full 8-point automated test suite with simulated extractors |
-| `npm run build` | Recompiles UI templates from `build_ui.py` across popup, side panel, and dashboard |
-| `npm run troubleshoot` | Runs the interactive network reachability, DNS & TLS handshake probe |
+| `streamcatch` | Starts the download engine on `http://127.0.0.1:8735` |
+| `streamcatch --open` *(or `-o`)* | Opens the `extension/` folder in your file explorer |
+| `streamcatch --path` *(or `-p`)* | Prints the exact path to the extension directory |
+| `streamcatch --setup` | Verifies and updates `yt-dlp` and `imageio-ffmpeg` |
+| `streamcatch --test` | Runs the automated test suite |
 
 ---
 
-### Method B: Native One-Click Launchers (No Node.js Required)
+### 💻 Option 2: Local Git Clone + NPM Setup
 
-If you don't use npm, use the native launchers:
+If you prefer cloning the repository directly:
+
+```bash
+# 1. Clone repository
+git clone https://github.com/soahimrahman/StreamCatch.git
+cd StreamCatch
+
+# 2. Automatically install all dependencies
+npm install
+
+# 3. Start the engine
+npm start
+```
+
+#### Available `npm` Scripts:
+- `npm install` *(or `npm run setup`)* — Installs and checks `yt-dlp` & `imageio-ffmpeg`.
+- `npm start` — Boots the local engine on `127.0.0.1:8735`.
+- `npm test` — Executes the 8-point automated test suite.
+- `npm run build` — Recompiles the UI HTML templates from `build_ui.py`.
+- `npm run troubleshoot` — Runs the connection, DNS & TLS reachability probe.
+
+---
+
+### 🖱️ Option 3: Native One-Click Launchers (No Node.js Required)
+
+If you don't have Node.js or npm installed, use the native launchers:
 
 #### On Windows:
 Double-click:
 ```cmd
 START_STREAMCATCH_WINDOWS.bat
 ```
-*Automatically checks pip dependencies, updates `yt-dlp`, and starts the engine on port 8735.*
 
 #### On macOS & Linux:
 Run:
@@ -143,19 +168,23 @@ chmod +x START_STREAMCATCH_MAC_LINUX.sh helper/START_MAC_LINUX.sh
 
 ---
 
-### Step 2: Install the Chromium Extension
+### 🧩 Adding the Extension to Chrome / Edge
 
-1. Open your browser and navigate to:
+> [!NOTE]
+> **Why is loading the extension in Developer Mode required?**
+> Due to Chromium security safeguards, Google Chrome and Microsoft Edge do not permit any command-line tool (including npm) to inject extensions directly into a browser profile without user consent (to protect against rogue spyware). Loading it takes under 10 seconds:
+
+1. In your browser, open:
    - **Google Chrome / Brave:** `chrome://extensions`
    - **Microsoft Edge:** `edge://extensions`
-2. Enable **Developer mode** (toggle switch in the top-right or sidebar).
+2. Turn on **Developer mode** (toggle in the top-right corner).
 3. Click **Load unpacked**.
-4. Select the `extension/` directory inside this project folder.
-5. Click the puzzle icon in your browser toolbar and pin **StreamCatch**.
+4. Select the `extension/` folder (or run `streamcatch --open` to reveal it in your file explorer).
+5. Pin **StreamCatch** to your browser toolbar!
 
 ---
 
-### Step 3: Start Downloading!
+### 🎬 Start Downloading!
 
 1. Click the **StreamCatch** icon in your toolbar.
 2. The indicator will show **Engine online** with a green pulse.
@@ -188,6 +217,8 @@ StreamCatch/
 ├── .github/
 │   └── workflows/
 │       └── ci.yml                     # Multi-OS CI workflow (Ubuntu, Windows, macOS)
+├── bin/
+│   └── cli.js                         # Global CLI entry point (npm install -g streamcatch)
 ├── scripts/                           # Cross-platform Node / npm automation
 │   ├── setup.js                       # Auto-detects Python & installs pip requirements
 │   └── start.js                       # Cross-platform engine runner
@@ -214,7 +245,7 @@ StreamCatch/
 ├── tests/
 │   └── test_local_api.py              # Mocked integration test suite for engine endpoints
 ├── build_ui.py                        # Single-source HTML generator for extension views
-├── package.json                       # npm automated scripts & project metadata
+├── package.json                       # npm automated scripts, CLI & package metadata
 ├── START_STREAMCATCH_WINDOWS.bat      # Root Windows launcher
 ├── START_STREAMCATCH_MAC_LINUX.sh     # Root macOS/Linux launcher
 ├── .gitignore                         # Complete Git ignore definitions
@@ -243,7 +274,8 @@ StreamCatch includes built-in diagnostic tools to help identify problems quickly
 ### 4. Updating Extractor Engines
 Websites frequently modify their streaming formats. Keep `yt-dlp` current by running:
 ```bash
-npm run setup
+streamcatch --setup
+# or: npm run setup
 ```
 *(or on Windows: `helper\UPDATE_ENGINE_WINDOWS.bat`)*
 
