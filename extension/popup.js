@@ -7,8 +7,11 @@ const state = {
   route:'home', format:'auto', resolution:'best', downloadMode:'single',
   downloadProvider:'engine', cookieBrowser:'none', engineOnline:false, engineError:null,
   activeTab:null, tabMedia:[], jobs:[], direct:[], analyzeId:null,
-  toastTimer:null, activeRequest:false, previousTabId:null
+  toastTimer:null, activeRequest:false, previousTabId:null, lastUserAction:Date.now()
 };
+['pointerdown','keydown','wheel','touchstart'].forEach(evt=>{
+  window.addEventListener(evt,()=>{state.lastUserAction=Date.now();},{passive:true});
+});
 const esc = v => String(v ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const shorten=(v,n=75)=>String(v||'').length>n?String(v).slice(0,n-1)+'…':String(v||'');
 const isWebUrl=value=>{try{const u=new URL(value);return ['http:','https:'].includes(u.protocol)&&!!u.hostname;}catch{return false;}};
@@ -49,6 +52,7 @@ let isStartingEngine = false;
 async function startEngineProcess(){
   if(isStartingEngine || state.engineOnline) return;
   isStartingEngine = true;
+  state.lastUserAction = Date.now();
   toast('Starting StreamCatch engine in the background...');
 
   const startBtns = [$('startEngineTopBtn'), $('startEngineHomeBtn'), $('startEngineSettingsBtn'), $('startEngineSidebarBtn')];
@@ -97,9 +101,15 @@ async function startEngineProcess(){
 }
 async function api(path,method='GET',body=null){
   const controller=new AbortController();const tid=setTimeout(()=>controller.abort(),18000);
+  const isUserActive=(Date.now()-(state.lastUserAction||0))<300000;
   try{
     const result=await fetch(HOST+path,{method,
-      headers:{'X-StreamCatch-Client':'StreamCatch/1.1','X-StreamCatch-Extension':chrome.runtime.id,'Content-Type':'application/json'},
+      headers:{
+        'X-StreamCatch-Client':'StreamCatch/1.1',
+        'X-StreamCatch-Extension':chrome.runtime.id,
+        'X-StreamCatch-User-Active':isUserActive?'true':'false',
+        'Content-Type':'application/json'
+      },
       body:body===null?undefined:JSON.stringify(body),signal:controller.signal,cache:'no-store'});
     let json={};try{json=await result.json();}catch{}
     if(!result.ok){const e=new Error(json.error||`Engine HTTP ${result.status}`);e.status=result.status;throw e;}
@@ -550,10 +560,20 @@ async function init(){
   await Promise.all([checkEngine().then(showConnectionResult),loadTab()]);await refreshActivity();renderBulkCount();
   setInterval(async()=>{
     if(document.visibilityState==='hidden')return;
+    const isUserActive=(Date.now()-(state.lastUserAction||0))<300000;
+    const hasActiveJobs=state.jobs.some(j=>['analyzing','downloading','processing'].includes(j.status));
+    if(!isUserActive&&!hasActiveJobs&&!state.engineOnline)return;
     if(state.route==='downloads'||state.route==='home')await refreshActivity();
     if(state.route==='detected')await refreshMedia();
   },2300);
-  setInterval(async()=>{if(document.visibilityState==='visible'){await checkEngine().then(showConnectionResult);if(document.body.dataset.mode==='sidepanel')await loadTab();}},6500);
+  setInterval(async()=>{
+    if(document.visibilityState==='visible'){
+      const isUserActive=(Date.now()-(state.lastUserAction||0))<300000;
+      if(!isUserActive&&!state.engineOnline)return;
+      await checkEngine().then(showConnectionResult);
+      if(document.body.dataset.mode==='sidepanel')await loadTab();
+    }
+  },6500);
   chrome.tabs.onActivated?.addListener(()=>{if(document.body.dataset.mode==='sidepanel')loadTab();});
 }
 init().catch(error=>{console.error('StreamCatch UI error:',error);toast('Cannot initialize StreamCatch. Reload this extension.');});

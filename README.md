@@ -36,6 +36,7 @@ It pairs an elegant, dark-mode **Chromium extension** (Popup, Chrome Side Panel,
 - 📑 **True Playlists & Channels:** Download entire collections or selected ranges with truthful progress and no silent failures.
 - 📦 **Bulk URL Batch Manager:** Queue up to 100 links at once, grab URLs from all open tabs, and automatically deduplicate.
 - 🔍 **Live Media Sniffer:** Detects active video and audio streams (direct MP4/WebM files, HLS `.m3u8`, and DASH `.mpd` adaptive streams) right from the active tab.
+- 💤 **Automatic 5-Minute Inactivity Auto-Close:** To conserve your computer's RAM and CPU, the local engine automatically closes itself after 5 minutes of inactivity (when no downloads are running or queued). Whenever you need it again, simply click **"🚀 Start Engine"** in the extension to wake it up in 1 click!
 
 ---
 
@@ -83,6 +84,7 @@ flowchart LR
 | **Queue & Transfer Manager** | Inspect queued, analyzing, active, partial, and completed downloads. Cancel running transfers, retry partial or failed jobs, and open your output folder in one click. |
 | **Truthful Error Diagnostics** | Clear classification of network timeouts (**Curl error 28**), DNS resolution failures, HTTP 403 access limitations, and conversion faults instead of confusing technical traces. |
 | **Optional Authenticated Sessions** | Opt-in ability to pass authorized browser session cookies for personal content you own or have permission to access. Disabled by default. |
+| **Auto-Idle Shutdown (5 Min)** | When no downloads are actively processing or queued, the local Python service automatically shuts down after 5 minutes of inactivity to keep your PC fast and free of idle memory footprint. Restart anytime directly with 1 click from the extension's **🚀 Start Engine** button. |
 
 ---
 

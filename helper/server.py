@@ -40,6 +40,41 @@ FORMATS = ('auto', 'mp4', 'mkv', 'webm', 'mp3', 'm4a', 'wav', 'flac')
 RESOLUTIONS = ('best', '2160', '1440', '1080', '720', '480', '360')
 BROWSERS = ('none', 'chrome', 'edge', 'firefox', 'brave')
 
+IDLE_TIMEOUT_SECONDS = 300  # 5 minutes default
+LAST_ACTIVITY_TIME = time.monotonic()
+
+
+def touch_activity():
+    global LAST_ACTIVITY_TIME
+    LAST_ACTIVITY_TIME = time.monotonic()
+
+
+def is_busy():
+    with LOCK:
+        return any(j.get('status') in ('queued', 'analyzing', 'downloading', 'processing') for j in JOBS.values())
+
+
+def start_idle_monitor(server, timeout=300):
+    if timeout <= 0:
+        return None
+
+    def _monitor():
+        while True:
+            time.sleep(2.0)
+            if is_busy():
+                touch_activity()
+                continue
+            idle = time.monotonic() - LAST_ACTIVITY_TIME
+            if idle >= timeout:
+                print(f'\n[StreamCatch] Engine inactive for {int(idle)}s (>= {timeout}s limit). Auto-shutting down to save memory.')
+                print('[StreamCatch] Click "Start Engine" in the extension anytime to restart.\n', flush=True)
+                threading.Thread(target=server.shutdown, daemon=True).start()
+                break
+
+    thread = threading.Thread(target=_monitor, daemon=True, name='StreamCatchIdleMonitor')
+    thread.start()
+    return thread
+
 
 def is_public_url(candidate: str) -> bool:
     if not isinstance(candidate, str) or len(candidate) > 4096:
@@ -591,7 +626,7 @@ class AppHandler(BaseHTTPRequestHandler):
         if self._origin():
             self.send_header('Access-Control-Allow-Origin', self._origin())
             self.send_header('Vary', 'Origin')
-            self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-StreamCatch-Client, X-StreamCatch-Extension')
+            self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-StreamCatch-Client, X-StreamCatch-Extension, X-StreamCatch-User-Active')
             self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
             self.send_header('Access-Control-Allow-Private-Network', 'true')
         self.send_header('X-Content-Type-Options', 'nosniff')
@@ -605,7 +640,7 @@ class AppHandler(BaseHTTPRequestHandler):
         self.send_response(204)
         self.send_header('Access-Control-Allow-Origin', self._origin())
         self.send_header('Vary', 'Origin')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-StreamCatch-Client, X-StreamCatch-Extension')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-StreamCatch-Client, X-StreamCatch-Extension, X-StreamCatch-User-Active')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
         self.send_header('Access-Control-Allow-Private-Network', 'true')
         self.send_header('Content-Length', '0')
@@ -615,6 +650,9 @@ class AppHandler(BaseHTTPRequestHandler):
         if not self._is_extension_request():
             self._write(403, {'error': 'Open StreamCatch from the matching Chrome extension.'})
             return False
+        user_active = self.headers.get('X-StreamCatch-User-Active', 'true') != 'false'
+        if user_active or is_busy() or self.command == 'POST':
+            touch_activity()
         return True
 
     def _read_json(self):
@@ -635,7 +673,9 @@ class AppHandler(BaseHTTPRequestHandler):
         if self.path == '/health':
             self._write(200, {'ok': True, 'version': '1.2.1', 'yt_dlp': yt_dlp is not None,
                               'ffmpeg': bool(FFMPEG_DIR), 'folder': str(DOWNLOAD_DIR),
-                              'features': ['playlist', 'bulk', 'formats', 'auto-connect', 'side-panel']}); return
+                              'idle_timeout': IDLE_TIMEOUT_SECONDS,
+                              'idle_seconds': round(time.monotonic() - LAST_ACTIVITY_TIME, 1),
+                              'features': ['playlist', 'bulk', 'formats', 'auto-connect', 'side-panel', 'auto-idle-shutdown']}); return
         if self.path == '/jobs':
             with LOCK:
                 values = [snapshot(j) for j in JOBS.values()]
@@ -739,6 +779,8 @@ class AppHandler(BaseHTTPRequestHandler):
 def main():
     parser = argparse.ArgumentParser(description='StreamCatch companion downloader')
     parser.add_argument('--port', type=int, default=8735)
+    parser.add_argument('--idle-timeout', type=int, default=300,
+                        help='Inactivity timeout in seconds before auto-closing (default: 300, 0 to disable)')
     args = parser.parse_args()
     try:
         httpd = ThreadingHTTPServer(('127.0.0.1', args.port), AppHandler)
@@ -746,6 +788,11 @@ def main():
         print('\n[StreamCatch] SERVER DID NOT START:', error, file=sys.stderr)
         print('Port 8735 may still belong to an older helper. Close it and start this one.', file=sys.stderr)
         sys.exit(1)
+
+    global IDLE_TIMEOUT_SECONDS
+    IDLE_TIMEOUT_SECONDS = args.idle_timeout
+    start_idle_monitor(httpd, timeout=args.idle_timeout)
+
     try:
         print('\n' + '=' * 65)
         print('  STREAMCATCH v1.2.1  /  LOCAL DOWNLOAD ENGINE')
@@ -753,6 +800,7 @@ def main():
         print('  STATUS:     SERVER RUNNING - AUTO CONNECT ENABLED')
         print('  Address:    http://127.0.0.1:' + str(args.port))
         print('  Pairing:    NOT REQUIRED')
+        print('  Auto-Close: ' + (f'INACTIVE FOR {args.idle_timeout // 60} MIN (restart via extension)' if args.idle_timeout > 0 else 'DISABLED'))
         print('  Features:   PLAYLISTS / BULK DOWNLOADS / EXTRA FORMATS')
         print('  Downloads:  ' + str(DOWNLOAD_DIR))
         print('  yt-dlp:     ' + ('READY' if yt_dlp else 'NOT INSTALLED'))

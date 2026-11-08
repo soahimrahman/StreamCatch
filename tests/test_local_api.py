@@ -188,5 +188,18 @@ class API(unittest.TestCase):
         self.assertEqual(data.get('title'), 'Mock video')
         self.assertIn('http', data.get('url'))
 
+    def test_10_idle_monitor_auto_shutdown(self):
+        test_server = engine.ThreadingHTTPServer(('127.0.0.1', 0), engine.AppHandler)
+        test_thread = threading.Thread(target=test_server.serve_forever, daemon=True)
+        test_thread.start()
+
+        # Force idle time beyond timeout
+        engine.LAST_ACTIVITY_TIME = time.monotonic() - 2.0
+        engine.start_idle_monitor(test_server, timeout=0.1)
+
+        test_thread.join(timeout=4.0)
+        self.assertFalse(test_thread.is_alive(), "Server should shut down when idle")
+        test_server.server_close()
+
 
 if __name__=='__main__': unittest.main()
