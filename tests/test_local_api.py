@@ -69,7 +69,8 @@ class FakeYdl:
                 hook({'status':'downloading','downloaded_bytes':80,'total_bytes':100,
                       'info_dict':{'id':'xyz'}})
             filepath=self._finish(f'single-{time.monotonic_ns()}.mp4')
-        return {'title':'Mock video','id':'xyz','duration':42,'formats':[{'height':1080,'vcodec':'h264'}],
+        return {'title':'Mock video','id':'xyz','duration':42,'url':'https://example.com/mock-stream.mp4','ext':'mp4',
+                'formats':[{'height':1080,'vcodec':'h264','acodec':'aac','ext':'mp4','url':'https://example.com/mock-stream-1080.mp4'}],
                 'filepath':filepath}
 
 
@@ -179,6 +180,13 @@ class API(unittest.TestCase):
         self.assertGreater(result['count'],0)
         code,data=self.call('GET','/jobs')
         self.assertFalse(any(j['status']=='completed' for j in data['items']))
+
+    def test_09_extract_direct_url(self):
+        code, data = self.call('POST', '/extract-direct-url', {'url': 'https://example.com/watch', 'format': 'mp4'})
+        self.assertEqual(code, 200)
+        self.assertTrue(data.get('ok'))
+        self.assertEqual(data.get('title'), 'Mock video')
+        self.assertIn('http', data.get('url'))
 
 
 if __name__=='__main__': unittest.main()

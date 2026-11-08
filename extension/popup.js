@@ -5,7 +5,7 @@ const FORMATS = ['auto','mp4','mkv','webm','mp3','m4a','wav','flac'];
 const RESOLUTIONS = ['best','2160','1440','1080','720','480','360'];
 const state = {
   route:'home', format:'auto', resolution:'best', downloadMode:'single',
-  cookieBrowser:'none', engineOnline:false, engineError:null,
+  downloadProvider:'engine', cookieBrowser:'none', engineOnline:false, engineError:null,
   activeTab:null, tabMedia:[], jobs:[], direct:[], analyzeId:null,
   toastTimer:null, activeRequest:false, previousTabId:null
 };
@@ -163,6 +163,19 @@ function updateMode(mode,save=true){
   $('inspectButton').textContent=state.downloadMode==='playlist'?'⌕ Playlist info':'⌕ Preview';
   if(save)chrome.storage.local.set({downloadMode:state.downloadMode}).catch(()=>{});
 }
+function updateProvider(provider,save=true){
+  state.downloadProvider=provider==='browser'?'browser':'engine';
+  document.querySelectorAll('[data-download-provider]').forEach(btn=>btn.classList.toggle('selected',btn.dataset.downloadProvider===state.downloadProvider));
+  const select=$('defaultProviderSelect');
+  if(select)select.value=state.downloadProvider;
+  const hint=$('providerHint');
+  if(hint){
+    hint.textContent=state.downloadProvider==='browser'
+      ?'🌐 Browser Downloader: Chrome native download manager. Appears in Chrome\'s download bar and history.'
+      :'⚡ Local Engine: 4K video + audio merging, MP3 conversion, full playlist support. Saved to Downloads/StreamCatch.';
+  }
+  if(save)chrome.storage.local.set({downloadProvider:state.downloadProvider}).catch(()=>{});
+}
 function syncFormats(value,save=true){
   if(!FORMATS.includes(value))return;
   state.format=value;
@@ -188,6 +201,75 @@ async function downloadUrl(url=undefined,forceSingle=false){
   if(!forceSingle&&state.downloadMode==='single'&&looksLikePlaylist(link)){
     updateMode('playlist');toast('Playlist URL detected. Review the playlist range, then click Download now again.');return;
   }
+
+  // Handle Browser Native Downloader option
+  if(state.downloadProvider==='browser'){
+    if(!forceSingle&&state.downloadMode==='playlist'){
+      toast('Full playlists require Local Engine for multi-file queuing. Switching to Local Engine…');
+      updateProvider('engine');
+    } else {
+      const isDirectFile = /\.(mp4|m4v|webm|mov|mkv|avi|flv|mp3|m4a|wav|flac)(?:[?#]|$)/i.test(link);
+      const isSegmented = /\.(m3u8|mpd)(?:[?#]|$)/i.test(link);
+      if(isSegmented){
+        toast('Segmented streams (HLS/DASH) require Local Engine with FFmpeg to merge segments into a video file.');
+        updateProvider('engine');
+      } else if(isDirectFile){
+        // Direct media links can start immediately via Chrome's native downloader
+        $('downloadButton').disabled=true;
+        try{
+          const title=state.activeTab?.title||'Video';
+          const res=await chrome.runtime.sendMessage({
+            action:'DOWNLOAD_DIRECT',
+            url:link,
+            title,
+            direct:true
+          });
+          if(!res?.ok)throw Error(res?.error||'Browser download failed');
+          toast('Download started in Chrome.');
+          navigate('downloads');
+          await refreshActivity();
+        }catch(err){
+          toast('Browser download error: '+shorten(err.message,100));
+        }finally{
+          $('downloadButton').disabled=false;
+        }
+        return;
+      } else {
+        // Web video page (YouTube, Facebook, Twitter, TikTok, etc.)
+        // Extract direct streaming URL from helper, then hand off to Chrome downloader!
+        if(!await ensureOnline())return;
+        $('downloadButton').disabled=true;
+        try{
+          toast('Extracting stream for browser…');
+          const streamInfo=await api('/extract-direct-url','POST',{
+            url:link,
+            format:state.format,
+            resolution:state.resolution,
+            cookies:state.cookieBrowser
+          });
+          if(!streamInfo?.url)throw Error(streamInfo?.error||'No stream URL returned');
+          const res=await chrome.runtime.sendMessage({
+            action:'DOWNLOAD_DIRECT',
+            url:streamInfo.url,
+            title:streamInfo.title||state.activeTab?.title||'Video',
+            ext:streamInfo.ext||'mp4',
+            direct:true
+          });
+          if(!res?.ok)throw Error(res?.error||'Chrome download failed');
+          toast('Download started in Chrome browser.');
+          navigate('downloads');
+          await refreshActivity();
+        }catch(error){
+          toast('Browser download error: '+shorten(error.message,110));
+        }finally{
+          $('downloadButton').disabled=false;
+        }
+        return;
+      }
+    }
+  }
+
+  // Local Engine download workflow
   if(!await ensureOnline())return;
   $('downloadButton').disabled=true;
   try{
@@ -394,12 +476,13 @@ async function handleCheckForUpdates(notify = true){
   }
 }
 async function init(){
-  const settings=await chrome.storage.local.get(['quality','format','resolution','downloadMode','cookieBrowser','captureEnabled']);
+  const settings=await chrome.storage.local.get(['quality','format','resolution','downloadMode','cookieBrowser','captureEnabled','downloadProvider']);
   await chrome.storage.local.remove('pairKey');
   const oldQuality=settings.quality;
   syncFormats(settings.format||(oldQuality==='audio'?'mp3':oldQuality==='mp4'?'mp4':'auto'),false);
   syncResolution(settings.resolution||(RESOLUTIONS.includes(oldQuality)?oldQuality:'best'),false);
   updateMode(settings.downloadMode||'single',false);
+  updateProvider(['engine','browser'].includes(settings.downloadProvider)?settings.downloadProvider:'engine',false);
   state.cookieBrowser=['none','chrome','edge','firefox','brave'].includes(settings.cookieBrowser)?settings.cookieBrowser:'none';
   $('cookieBrowser').value=state.cookieBrowser;$('captureEnabled').checked=settings.captureEnabled!==false;
   document.querySelectorAll('[data-route]').forEach(button=>button.addEventListener('click',()=>navigate(button.dataset.route)));
@@ -411,6 +494,8 @@ async function init(){
   $('useCurrent').addEventListener('click',async()=>{await loadTab(true);toast('Current tab URL selected.');});
   $('pasteButton').addEventListener('click',async()=>{try{const text=await navigator.clipboard.readText();if(!isWebUrl(text.trim()))throw Error();$('urlInput').value=text.trim();toast('Video URL pasted.');}catch{toast('Use Ctrl+V to paste a URL.');}});
   document.querySelectorAll('[data-download-mode]').forEach(btn=>btn.addEventListener('click',()=>updateMode(btn.dataset.downloadMode)));
+  document.querySelectorAll('[data-download-provider]').forEach(btn=>btn.addEventListener('click',()=>updateProvider(btn.dataset.downloadProvider)));
+  if($('defaultProviderSelect'))$('defaultProviderSelect').addEventListener('change',e=>updateProvider(e.target.value));
   ['formatSelect','bulkFormatSelect'].forEach(id=>$(id).addEventListener('change',e=>syncFormats(e.target.value)));
   ['resolutionSelect','bulkResolutionSelect'].forEach(id=>$(id).addEventListener('change',e=>syncResolution(e.target.value)));
   $('bulkInput').addEventListener('input',renderBulkCount);

@@ -70,6 +70,14 @@ html='''<!doctype html>
           <div class="form-card">
             <form id="urlForm">
               <div class="form-card-top"><div><h2>New download</h2><p>Choose how you want to save your media</p></div><span class="number-tag">01</span></div>
+              <div class="provider-switch-row">
+                <span class="field-label-inline">DOWNLOAD MANAGER</span>
+                <div class="provider-pill-group" role="radiogroup" aria-label="Download manager">
+                  <button type="button" data-download-provider="engine" class="provider-btn selected" title="Download via local Python engine (yt-dlp + FFmpeg)">⚡ Local Engine</button>
+                  <button type="button" data-download-provider="browser" class="provider-btn" title="Download via browser native download manager (Chrome)">🌐 Browser Downloader</button>
+                </div>
+              </div>
+              <div class="provider-hint" id="providerHint">⚡ Local Engine: 4K video + audio merging, MP3 conversion, full playlist support. Saved to Downloads/StreamCatch.</div>
               <div class="mode-tabs" role="group" aria-label="Download mode"><button type="button" data-download-mode="single" class="mode-tab selected">▶ &nbsp;Single video</button><button type="button" data-download-mode="playlist" class="mode-tab">▤ &nbsp;Playlist / channel</button></div>
               <label class="field-label" for="urlInput">VIDEO OR PLAYLIST LINK</label>
               <div class="input-wrap"><span class="link-icon">↗</span><input id="urlInput" type="url" placeholder="https://www.youtube.com/watch?v=…" spellcheck="false" required><button type="button" id="pasteButton" class="inside-button">Paste</button></div>
@@ -134,7 +142,7 @@ html='''<!doctype html>
           <button id="testServer" class="text-link">Test server in browser →</button>
           <p class="micro-hint">HTTP 403 in a normal browser tab is expected. Only the extension may access the engine.</p>
         </div>
-        <div class="settings-card"><div class="card-symbol teal">⚙</div><h2>Preferences</h2><p>Optional tools for media detection and sites requiring a signed-in browser session.</p><label class="field-label" for="cookieBrowser">SIGNED-IN CONTENT (OPTIONAL)</label><select id="cookieBrowser" class="field-select"><option value="none">Do not read cookies (recommended)</option><option value="chrome">Use Chrome session</option><option value="edge">Use Edge session</option><option value="firefox">Use Firefox session</option><option value="brave">Use Brave session</option></select><p class="micro-hint">Opt-in only. The local downloader may read your browser's session cookies for content you're authorized to access.</p><label class="checkbox-row"><input type="checkbox" checked id="captureEnabled"><span><strong>Detect media automatically</strong><small>Scan media requests on websites</small></span></label><div id="enginePath" class="path-info">Folder available when engine connects.</div></div>
+        <div class="settings-card"><div class="card-symbol teal">⚙</div><h2>Preferences</h2><p>Optional tools for media detection and sites requiring a signed-in browser session.</p><label class="field-label" for="defaultProviderSelect">DEFAULT DOWNLOAD MANAGER</label><select id="defaultProviderSelect" class="field-select"><option value="engine">⚡ Local Engine (yt-dlp + FFmpeg) — Recommended</option><option value="browser">🌐 Browser Downloader (Google Chrome Native)</option></select><p class="micro-hint">Choose whether downloads run via the local Python engine (Downloads/StreamCatch) or directly inside Chrome's native download shelf.</p><label class="field-label" for="cookieBrowser">SIGNED-IN CONTENT (OPTIONAL)</label><select id="cookieBrowser" class="field-select"><option value="none">Do not read cookies (recommended)</option><option value="chrome">Use Chrome session</option><option value="edge">Use Edge session</option><option value="firefox">Use Firefox session</option><option value="brave">Use Brave session</option></select><p class="micro-hint">Opt-in only. The local downloader may read your browser's session cookies for content you're authorized to access.</p><label class="checkbox-row"><input type="checkbox" checked id="captureEnabled"><span><strong>Detect media automatically</strong><small>Scan media requests on websites</small></span></label><div id="enginePath" class="path-info">Folder available when engine connects.</div></div>
         <div class="settings-card author-settings-card">
           <div class="card-symbol gold">♥</div>
           <h2>Creator & Support</h2>

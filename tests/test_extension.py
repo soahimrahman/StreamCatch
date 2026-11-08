@@ -48,6 +48,8 @@ class TestExtensionIntegrity(unittest.TestCase):
             self.assertIn('supportkori.com/soahimrahmantasin17', content, f"{filename} should contain donation link")
             self.assertIn('updateReloadBtn', content, f"{filename} should contain reload update button")
             self.assertIn('startEngine', content, f"{filename} should contain start engine button")
+            self.assertIn('data-download-provider', content, f"{filename} should contain download provider switch")
+            self.assertIn('defaultProviderSelect', content, f"{filename} should contain default provider select in settings")
 
     def test_launcher_scripts_exist(self):
         self.assertTrue((ROOT / 'SETUP_AUTO_START_WINDOWS.bat').exists(), "SETUP_AUTO_START_WINDOWS.bat must exist")

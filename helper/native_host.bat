@@ -5,3 +5,4 @@ if %errorlevel%==0 (
 ) else (
   python "%~dp0native_host.py"
 )
+

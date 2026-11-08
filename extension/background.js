@@ -169,13 +169,19 @@ chrome.runtime.onMessage.addListener((message, sender, respond)=>{
       case 'CLEAR_MEDIA': await clearMedia(Number(message.tabId)); return {ok:true};
       case 'DOWNLOAD_DIRECT': {
         const url=message.url;
-        if (!isUrl(url) || classify(url) !== 'direct') throw Error('Not a direct video link. Use the local engine for streams or page URLs.');
-        const ext=(new URL(url).pathname.match(/\.(mp4|m4v|webm|mov|mkv|avi|flv)$/i)||[])[1]||'mp4';
-        const filename=`StreamCatch/${cleanTitle(message.title || 'Video')}.${ext.toLowerCase()}`;
+        if (!isUrl(url)) throw Error('Invalid download URL.');
+        if (!message.direct && classify(url) !== 'direct') throw Error('Not a direct video link. Use the local engine for streams or page URLs.');
+        let ext=message.ext;
+        if (!ext) {
+          const match=new URL(url).pathname.match(/\.(mp4|m4v|webm|mov|mkv|avi|flv|mp3|m4a|wav|flac)$/i);
+          ext=match?match[1]:'mp4';
+        }
+        const title=cleanTitle(message.title || 'Video');
+        const filename=`StreamCatch/${title}.${ext.toLowerCase()}`;
         const id=await chrome.downloads.download({url,filename,conflictAction:'uniquify',saveAs:false});
         const stored=await chrome.storage.local.get('directHistory');
         const history=Array.isArray(stored.directHistory)?stored.directHistory:[];
-        history.unshift({id,urlHost:new URL(url).hostname,title:cleanTitle(message.title),status:'in_progress',time:Date.now()});
+        history.unshift({id,urlHost:new URL(url).hostname,title,status:'in_progress',time:Date.now()});
         await chrome.storage.local.set({directHistory:history.slice(0,50)});
         return {ok:true,id};
       }

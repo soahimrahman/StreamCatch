@@ -330,6 +330,104 @@ def friendly_error(error):
     return clean_error(error)[-700:]
 
 
+def extract_direct_stream(url, output='auto', resolution='best', cookies='none'):
+    """Extract direct CDN streaming URL and metadata for native browser download."""
+    if yt_dlp is None:
+        raise RuntimeError('yt-dlp is not installed. Start the local engine.')
+    if not is_public_url(url):
+        raise ValueError('Invalid public video URL')
+
+    opts = {
+        'noplaylist': True,
+        'quiet': True,
+        'no_warnings': True,
+        'skip_download': True,
+        'socket_timeout': 25,
+    }
+    if FFMPEG_DIR:
+        opts['ffmpeg_location'] = FFMPEG_DIR
+    if cookies in BROWSERS and cookies != 'none':
+        opts['cookiesfrombrowser'] = (cookies,)
+
+    with yt_dlp.YoutubeDL(opts) as ydl:
+        info = ydl.extract_info(url, download=False)
+
+    if not info:
+        raise ValueError('Website returned no streamable video.')
+    if info.get('entries'):
+        info = next((e for e in info['entries'] if e), info)
+
+    title = str(info.get('title') or 'Video')[:200]
+    formats = info.get('formats') or []
+    is_audio = output in ('mp3', 'm4a', 'wav', 'flac')
+    target_res = int(resolution) if resolution != 'best' and str(resolution).isdigit() else 999999
+
+    selected_url = None
+    selected_ext = 'mp4'
+
+    if is_audio:
+        audio_formats = [
+            f for f in formats
+            if f.get('url') and f.get('acodec') not in (None, 'none')
+        ]
+        def audio_score(f):
+            score = 0
+            if f.get('ext') == output:
+                score += 1000
+            elif f.get('ext') in ('m4a', 'aac'):
+                score += 500
+            score += safe_float(f.get('abr') or f.get('tbr') or 0)
+            return score
+        if audio_formats:
+            best_audio = max(audio_formats, key=audio_score)
+            selected_url = best_audio.get('url')
+            selected_ext = best_audio.get('ext') or output
+    else:
+        # Formats with both video and audio that are direct HTTP streams
+        combined_formats = [
+            f for f in formats
+            if f.get('url')
+            and f.get('vcodec') not in (None, 'none')
+            and f.get('acodec') not in (None, 'none')
+            and not str(f.get('protocol', '')).startswith(('m3u8', 'http_dash'))
+        ]
+        if output in ('mp4', 'webm'):
+            matching = [f for f in combined_formats if f.get('ext') == output]
+            if matching:
+                combined_formats = matching
+
+        if combined_formats:
+            valid_res = [f for f in combined_formats if (f.get('height') or 0) <= target_res]
+            pool = valid_res if valid_res else combined_formats
+            best_fmt = max(pool, key=lambda f: (f.get('height') or 0, safe_float(f.get('tbr') or 0)))
+            selected_url = best_fmt.get('url')
+            selected_ext = best_fmt.get('ext') or 'mp4'
+
+    # Fallback to info['url'] if present
+    if not selected_url and info.get('url'):
+        selected_url = info.get('url')
+        selected_ext = info.get('ext') or ('mp3' if is_audio else 'mp4')
+
+    # Fallback to any available format with a URL
+    if not selected_url and formats:
+        valid_fmts = [f for f in formats if f.get('url')]
+        if valid_fmts:
+            best_fallback = valid_fmts[-1]
+            selected_url = best_fallback.get('url')
+            selected_ext = best_fallback.get('ext') or ('mp3' if is_audio else 'mp4')
+
+    if not selected_url:
+        raise ValueError('No direct stream URL could be extracted for browser download. Use the Local Engine.')
+
+    return {
+        'ok': True,
+        'url': selected_url,
+        'title': title,
+        'ext': selected_ext,
+        'extractor': str(info.get('extractor_key') or ''),
+    }
+
+
 def analyze_job(job):
     if yt_dlp is None:
         modify(job['id'], status='failed', error='yt-dlp is not installed. Run START_WINDOWS.bat.'); return
@@ -626,6 +724,15 @@ class AppHandler(BaseHTTPRequestHandler):
             except Exception as error:
                 self._write(500, {'error': friendly_error(error)}); return
             self._write(200, {'ok': True}); return
+        if self.path == '/extract-direct-url':
+            try:
+                url = str(data.get('url') or '').strip()
+                output, resolution, cookies = effective_choices(data)
+                result = extract_direct_stream(url, output=output, resolution=resolution, cookies=cookies)
+                self._write(200, result)
+            except Exception as error:
+                self._write(400, {'error': friendly_error(error)})
+            return
         self._write(404, {'error': 'Not found'})
 
 

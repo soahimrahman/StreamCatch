@@ -78,10 +78,29 @@ flowchart LR
 | **Bulk URL Queue** | Paste batches up to 100 links or click **+ Open tabs** to pull video URLs from all tabs currently open in your browser window. Duplicates are filtered automatically. |
 | **Audio Extraction** | Convert videos into high-quality audio files: Lossless **FLAC**, uncompressed **WAV**, pristine **M4A**, or **MP3 (192 kbps)**. |
 | **Persistent Side Panel** | Take advantage of the modern Chrome Side Panel API (`sidePanel`). The downloader stays open alongside your tabs without disappearing when you click the webpage. |
+| **Dual Download Managers** | Choose your preferred download mechanism: **⚡ Local Engine** (`yt-dlp` + `FFmpeg`) for full 4K quality, audio merging, MP3 conversion, and playlists, or **🌐 Browser Downloader** (Chrome native) to download streams directly through Chrome's native download shelf and `chrome://downloads`. Configure your default in Settings or switch on the fly from the main Download tab! |
 | **Live Media Sniffer** | Actively sniffs network requests and video elements on webpages. Direct MP4/WebM files download via Chrome, while segmented HLS (`.m3u8`) and DASH (`.mpd`) streams route through the local engine. |
 | **Queue & Transfer Manager** | Inspect queued, analyzing, active, partial, and completed downloads. Cancel running transfers, retry partial or failed jobs, and open your output folder in one click. |
 | **Truthful Error Diagnostics** | Clear classification of network timeouts (**Curl error 28**), DNS resolution failures, HTTP 403 access limitations, and conversion faults instead of confusing technical traces. |
 | **Optional Authenticated Sessions** | Opt-in ability to pass authorized browser session cookies for personal content you own or have permission to access. Disabled by default. |
+
+---
+
+## ⚡ Local Engine vs. 🌐 Browser Downloader
+
+StreamCatch gives you full flexibility over how your files are downloaded and saved:
+
+| Capability | ⚡ Local Engine (`yt-dlp` + `FFmpeg`) | 🌐 Browser Downloader (Chrome Native) |
+| :--- | :--- | :--- |
+| **Download Interface** | StreamCatch Queue & Activity Tab | Chrome Native Download Shelf & `chrome://downloads` |
+| **Default Save Directory** | `Downloads/StreamCatch` | Chrome's Default Download Folder / Prompt |
+| **Quality & 4K Merging** | Full 4K/1080p video + audio merging via FFmpeg | Progressive direct streams (up to 720p/1080p) |
+| **Audio Extraction** | MP3, M4A, FLAC, WAV transcoded locally | Direct audio stream downloads |
+| **Playlist Support** | Full playlist queueing & auto-numbering | Direct single stream downloads |
+| **Direct Media Files** | Downloaded & organized to disk | Downloaded instantly in browser without engine |
+| **Best For** | Maximum quality, 4K, playlists, batch downloads | Quick single downloads in Chrome's download bar |
+
+Switch download providers instantly with the **[ ⚡ Local Engine ]** / **[ 🌐 Browser Downloader ]** toggle on the home tab, or set your persistent default in the **Settings** view.
 
 ---
 
