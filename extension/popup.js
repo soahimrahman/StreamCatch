@@ -264,6 +264,80 @@ async function openFixedPanel(){
     if(document.body.dataset.mode==='popup')chrome.tabs.create({url:chrome.runtime.getURL('dashboard.html')}).catch(()=>{});
   }
 }
+const GITHUB_RELEASES_URL = 'https://github.com/soahimrahman/StreamCatch/releases';
+
+function renderUpdateUI(update){
+  const isAvailable = Boolean(update?.available);
+  const version = update?.latestVersion || '';
+
+  const pill = $('updatePill');
+  if (pill) {
+    pill.style.display = isAvailable ? 'flex' : 'none';
+    const vEl = $('updateVersionPill');
+    if (vEl) vEl.textContent = version;
+  }
+
+  const banner = $('updateAlertBanner');
+  if (banner) {
+    banner.style.display = isAvailable ? 'flex' : 'none';
+    const vEl = $('updateVersionBanner');
+    if (vEl) vEl.textContent = version;
+  }
+
+  const sideBox = $('sidebarUpdateBox');
+  if (sideBox) {
+    sideBox.style.display = isAvailable ? 'flex' : 'none';
+    const vEl = $('updateVersionSidebar');
+    if (vEl) vEl.textContent = version;
+  }
+
+  const statusEl = $('updateCheckStatus');
+  if (statusEl) {
+    if (isAvailable) {
+      statusEl.textContent = `🚀 Update available: v${version}`;
+      statusEl.style.color = '#aa96ff';
+    } else {
+      statusEl.textContent = `✓ Up to date (v${chrome.runtime.getManifest().version})`;
+      statusEl.style.color = '#44dab2';
+    }
+  }
+}
+
+async function doReloadExtension(){
+  toast('Reloading StreamCatch extension...');
+  try {
+    await chrome.runtime.sendMessage({ action: 'RELOAD_EXTENSION' });
+  } catch {}
+  setTimeout(() => {
+    try { chrome.runtime.reload(); } catch {}
+  }, 100);
+}
+
+function openReleasePage(){
+  chrome.tabs.create({ url: GITHUB_RELEASES_URL }).catch(() => {});
+}
+
+async function handleCheckForUpdates(notify = true){
+  if (notify) toast('Checking GitHub for updates...');
+  const statusEl = $('updateCheckStatus');
+  if (statusEl) {
+    statusEl.textContent = 'Checking GitHub...';
+    statusEl.style.color = '#8d9ab4';
+  }
+
+  try {
+    const res = await chrome.runtime.sendMessage({ action: 'CHECK_FOR_UPDATES' });
+    const update = res?.update;
+    renderUpdateUI(update);
+    if (update?.available) {
+      toast(`🚀 Update v${update.latestVersion} found! Click Reload to apply.`);
+    } else if (notify) {
+      toast(`StreamCatch is up to date (v${chrome.runtime.getManifest().version}).`);
+    }
+  } catch (err) {
+    if (notify) toast('Could not check updates: ' + (err?.message || err));
+  }
+}
 async function init(){
   const settings=await chrome.storage.local.get(['quality','format','resolution','downloadMode','cookieBrowser','captureEnabled']);
   await chrome.storage.local.remove('pairKey');
@@ -307,6 +381,27 @@ async function init(){
   $('testServer').addEventListener('click',()=>chrome.tabs.create({url:HOST+'/health'}));
   $('cookieBrowser').addEventListener('change',async e=>{state.cookieBrowser=e.target.value;await chrome.storage.local.set({cookieBrowser:state.cookieBrowser});toast('Preference saved.');});
   $('captureEnabled').addEventListener('change',async e=>{await chrome.storage.local.set({captureEnabled:e.target.checked});toast(e.target.checked?'Media detection enabled.':'Media detection disabled.');});
+
+  // Check and render update notifications
+  chrome.storage.local.get('updateAvailable').then(({ updateAvailable }) => {
+    if (updateAvailable) renderUpdateUI(updateAvailable);
+  }).catch(() => {});
+
+  ['updateReloadBtnPill', 'updateReloadBtnBanner', 'updateReloadBtnSidebar'].forEach(id => {
+    const el = $(id);
+    if (el) el.addEventListener('click', doReloadExtension);
+  });
+
+  ['updateGetBtnPill', 'updateGetBtnBanner', 'updateGetBtnSidebar'].forEach(id => {
+    const el = $(id);
+    if (el) el.addEventListener('click', openReleasePage);
+  });
+
+  ['checkUpdateBtn', 'checkUpdateSettingsBtn'].forEach(id => {
+    const el = $(id);
+    if (el) el.addEventListener('click', () => handleCheckForUpdates(true));
+  });
+
   await Promise.all([checkEngine().then(showConnectionResult),loadTab()]);await refreshActivity();renderBulkCount();
   setInterval(async()=>{
     if(document.visibilityState==='hidden')return;

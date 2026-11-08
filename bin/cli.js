@@ -129,3 +129,4 @@ const serverRes = spawnSync(py.bin, [...py.prefix, SERVER_SCRIPT, ...args], {
 });
 
 process.exit(serverRes.status || 0);
+

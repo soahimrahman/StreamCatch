@@ -3,6 +3,7 @@
   "name": "StreamCatch \u2014 Universal Video Downloader",
   "short_name": "StreamCatch",
   "version": "1.2.1",
+  "author": "Soahim Rahman Tasin",
   "description": "Download permitted videos, playlists and bulk URL batches with format controls and a persistent side panel.",
   "permissions": [
     "activeTab",
@@ -10,11 +11,14 @@
     "storage",
     "downloads",
     "webRequest",
-    "sidePanel"
+    "sidePanel",
+    "alarms"
   ],
   "host_permissions": [
     "<all_urls>",
-    "http://127.0.0.1:8735/*"
+    "http://127.0.0.1:8735/*",
+    "https://raw.githubusercontent.com/soahimrahman/StreamCatch/*",
+    "https://api.github.com/repos/soahimrahman/StreamCatch/*"
   ],
   "background": {
     "service_worker": "background.js"

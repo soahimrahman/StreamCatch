@@ -8,6 +8,73 @@ const DASH_EXT = /\.mpd(?:$|[?#])/i;
 const FRAG_EXT = /\.(?:m4s|ts|cmfv|cmfa|aac|m4a)(?:$|[?#])/i;
 const isUrl = value => typeof value === 'string' && /^https?:\/\//i.test(value);
 
+const GITHUB_RAW_PACKAGE = 'https://raw.githubusercontent.com/soahimrahman/StreamCatch/main/package.json';
+const GITHUB_RELEASES_URL = 'https://github.com/soahimrahman/StreamCatch/releases';
+
+function parseSemver(v) {
+  const clean = String(v || '').replace(/^[^\d]*/, '').trim();
+  const [core, prerelease] = clean.split('-');
+  const parts = core.split('.').map(n => parseInt(n, 10) || 0);
+  while (parts.length < 3) parts.push(0);
+  return { major: parts[0], minor: parts[1], patch: parts[2], prerelease: prerelease || '' };
+}
+
+function compareSemver(a, b) {
+  const pa = parseSemver(a);
+  const pb = parseSemver(b);
+  if (pa.major !== pb.major) return pa.major - pb.major;
+  if (pa.minor !== pb.minor) return pa.minor - pb.minor;
+  if (pa.patch !== pb.patch) return pa.patch - pb.patch;
+  if (!pa.prerelease && pb.prerelease) return 1;
+  if (pa.prerelease && !pb.prerelease) return -1;
+  return 0;
+}
+
+async function checkForUpdates(force = false) {
+  try {
+    const currentVersion = chrome.runtime.getManifest().version;
+    const res = await fetch(`${GITHUB_RAW_PACKAGE}?_=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const remoteVersion = data.version;
+
+    if (remoteVersion && compareSemver(remoteVersion, currentVersion) > 0) {
+      const updateData = {
+        available: true,
+        currentVersion,
+        latestVersion: remoteVersion,
+        releaseUrl: GITHUB_RELEASES_URL,
+        checkedAt: Date.now()
+      };
+      await chrome.storage.local.set({ updateAvailable: updateData });
+      try {
+        await chrome.action.setBadgeText({ text: 'NEW' });
+        await chrome.action.setBadgeBackgroundColor({ color: '#7157e9' });
+      } catch {}
+      return updateData;
+    } else {
+      const updateData = {
+        available: false,
+        currentVersion,
+        latestVersion: remoteVersion || currentVersion,
+        releaseUrl: GITHUB_RELEASES_URL,
+        checkedAt: Date.now()
+      };
+      await chrome.storage.local.set({ updateAvailable: updateData });
+      try {
+        const curBadge = await chrome.action.getBadgeText({});
+        if (curBadge === 'NEW') {
+          await chrome.action.setBadgeText({ text: '' });
+        }
+      } catch {}
+      return updateData;
+    }
+  } catch (err) {
+    console.warn('StreamCatch update check failed:', err);
+    return { available: false, error: err.message };
+  }
+}
+
 function classify(url, mime = '') {
   if (!isUrl(url) || FRAG_EXT.test(url)) return null;
   const ct = String(mime).toLowerCase().split(';')[0].trim();
@@ -33,8 +100,18 @@ async function getMedia(tabId) {
 }
 async function updateBadge(tabId, count) {
   try {
-    await chrome.action.setBadgeText({tabId, text:count?String(Math.min(count,99)):''});
-    await chrome.action.setBadgeBackgroundColor({tabId, color:'#19caaa'});
+    if (count > 0) {
+      await chrome.action.setBadgeText({tabId, text: String(Math.min(count, 99))});
+      await chrome.action.setBadgeBackgroundColor({tabId, color: '#19caaa'});
+    } else {
+      const { updateAvailable } = await chrome.storage.local.get('updateAvailable');
+      if (updateAvailable?.available) {
+        await chrome.action.setBadgeText({tabId, text: 'NEW'});
+        await chrome.action.setBadgeBackgroundColor({tabId, color: '#7157e9'});
+      } else {
+        await chrome.action.setBadgeText({tabId, text: ''});
+      }
+    }
   } catch {}
 }
 async function capture(tabId, url, type, extra={}) {
@@ -111,6 +188,14 @@ chrome.runtime.onMessage.addListener((message, sender, respond)=>{
           return {...h, status:d?.state || h.status, bytes:d?.bytesReceived || 0, total:d?.totalBytes || 0, file:d?.filename || '', error:d?.error||''};
         })};
       }
+      case 'CHECK_FOR_UPDATES': {
+        const update = await checkForUpdates(true);
+        return {ok:true, update};
+      }
+      case 'RELOAD_EXTENSION': {
+        setTimeout(() => chrome.runtime.reload(), 100);
+        return {ok:true};
+      }
       default: return {ok:false,error:'Unknown action'};
     }
   })().then(respond).catch(error=>respond({ok:false,error:error?.message||String(error)}));
@@ -131,4 +216,22 @@ chrome.downloads.onChanged.addListener(async delta=>{
       await chrome.storage.local.set({directHistory});
     }
   } catch {}
+});
+
+// Periodic GitHub update checks (every 4 hours)
+try {
+  chrome.alarms?.create('streamcatch-check-update', { periodInMinutes: 240 });
+  chrome.alarms?.onAlarm?.addListener(alarm => {
+    if (alarm.name === 'streamcatch-check-update') {
+      checkForUpdates().catch(() => {});
+    }
+  });
+} catch {}
+
+chrome.runtime.onInstalled?.addListener(() => {
+  checkForUpdates().catch(() => {});
+});
+
+chrome.runtime.onStartup?.addListener(() => {
+  checkForUpdates().catch(() => {});
 });

@@ -19,17 +19,51 @@ html='''<!doctype html>
       <button class="nav-item" data-route="downloads" title="Download activity"><span class="nav-symbol">◷</span><span class="nav-text">Activity</span></button>
       <button class="nav-item" data-route="settings" title="Settings"><span class="nav-symbol">⚙</span><span class="nav-text">Settings</span></button>
     </nav>
-    <div class="sidebar-bottom"><div id="sideConnection" class="connection"><span class="pulse"></span><span id="sideConnectionText">Checking engine</span></div><button class="subtle-full" id="openDashboard">↗ Full dashboard</button></div>
+    <div class="sidebar-bottom">
+      <div id="sideConnection" class="connection"><span class="pulse"></span><span id="sideConnectionText">Checking engine</span></div>
+      <div id="sidebarUpdateBox" class="sidebar-update-box" style="display:none;">
+        <div class="sidebar-update-title">🚀 <b>Update Available</b></div>
+        <div class="sidebar-update-sub">v<span id="updateVersionSidebar"></span> is ready</div>
+        <div class="sidebar-update-actions">
+          <button id="updateReloadBtnSidebar" class="sidebar-btn-reload">Reload</button>
+          <button id="updateGetBtnSidebar" class="sidebar-btn-get">Get</button>
+        </div>
+      </div>
+      <div class="sidebar-author-box">
+        <span class="sidebar-author-label">Created by <a href="https://www.facebook.com/soahim.rahman.tasin17/" target="_blank" rel="noopener noreferrer">Soahim Rahman Tasin</a></span>
+        <a class="sidebar-donate-link" href="https://www.supportkori.com/soahimrahmantasin17" target="_blank" rel="noopener noreferrer">☕ Donate / Support ↗</a>
+      </div>
+      <button class="check-update-link" id="checkUpdateBtn" title="Check GitHub for latest update">↻ Check for updates</button>
+      <button class="subtle-full" id="openDashboard">↗ Full dashboard</button>
+    </div>
   </aside>
   <main class="main">
     <header class="topbar">
       <div class="breadcrumb">WORKSPACE <span>/</span> <strong id="routeCrumb">Download</strong></div>
-      <div class="top-actions"><span id="engineStatus" class="status-pill"><span class="status-dot"></span><span>Checking</span></span><button id="openSidePanel" class="pin-button" title="Open the fixed Chrome side panel">▣ <span>Fixed panel</span></button></div>
+      <div class="top-actions">
+        <div id="updatePill" class="update-pill" style="display:none;">
+          <span class="update-pill-text">🚀 v<span id="updateVersionPill"></span> ready</span>
+          <button id="updateReloadBtnPill" class="update-pill-btn" title="Reload extension in Chrome">Reload</button>
+          <button id="updateGetBtnPill" class="update-pill-outline" title="Open GitHub release">Get</button>
+        </div>
+        <span id="engineStatus" class="status-pill"><span class="status-dot"></span><span>Checking</span></span>
+        <button id="openSidePanel" class="pin-button" title="Open the fixed Chrome side panel">▣ <span>Fixed panel</span></button>
+      </div>
     </header>
     <section class="view active" id="view-home">
       <div class="page-heading"><div class="heading-kicker">SIMPLE · FAST · LOCAL</div><h1>Save something <span>great.</span></h1><p>Paste a link, select the format and hit download. Your files stay on your computer.</p></div>
       <div class="workspace-grid">
         <div class="main-column">
+          <div id="updateAlertBanner" class="update-alert-banner" style="display:none;">
+            <div class="update-banner-info">
+              <strong>🚀 Update Available!</strong>
+              <span>New version <b id="updateVersionBanner"></b> is published on GitHub.</span>
+            </div>
+            <div class="update-banner-actions">
+              <button id="updateReloadBtnBanner" class="update-btn-action" title="Reload extension to apply new files">Reload</button>
+              <button id="updateGetBtnBanner" class="update-btn-link" title="Open GitHub release page">Get ↗</button>
+            </div>
+          </div>
           <div class="tab-source"><div class="source-icon" id="platformIcon">▶</div><div class="source-copy"><small>OPEN BROWSER TAB</small><strong id="currentTabTitle">Finding current tab…</strong><span id="currentTabHost">—</span></div><button id="useCurrent" class="lite-button" type="button">Use link</button></div>
           <div class="form-card">
             <form id="urlForm">
@@ -44,6 +78,10 @@ html='''<!doctype html>
               <p class="form-footnote">Only download content you own or have permission to save. DRM-protected media isn't supported.</p>
             </form>
             <div class="inspected hidden" id="inspected"></div>
+            <div class="creator-credit-bar">
+              <span>Created with care by <a href="https://www.facebook.com/soahim.rahman.tasin17/" target="_blank" rel="noopener noreferrer">Soahim Rahman Tasin</a></span>
+              <a class="credit-donate-btn" href="https://www.supportkori.com/soahimrahmantasin17" target="_blank" rel="noopener noreferrer">☕ Support & Donate ↗</a>
+            </div>
           </div>
         </div>
         <div class="support-column"><div class="side-card"><span class="eyebrow">QUICK ACTIONS</span><h3>More ways to download</h3><button class="action-tile" data-route="bulk"><span class="tile-icon">▤</span><span><strong>Bulk downloader</strong><small>Queue up to 100 links at once</small></span><b>→</b></button><button class="action-tile" data-route="detected"><span class="tile-icon cyan">◈</span><span><strong>Find video files</strong><small>Detect playable files on this tab</small></span><b>→</b></button></div><div class="engine-card"><div class="eyebrow">LOCAL DOWNLOAD ENGINE</div><strong id="engineCardTitle">Checking connection…</strong><p id="engineCardMessage">Looking for your download engine.</p><button class="text-link" id="engineCardAction" data-route="settings">View connection →</button></div></div>
@@ -71,10 +109,31 @@ html='''<!doctype html>
     </section>
     <section class="view" id="view-settings">
       <div class="page-heading compact"><div class="heading-kicker">PREFERENCES</div><h1>Settings<span>.</span></h1><p>Local-first. No account or pairing code needed.</p></div>
-      <div class="settings-layout"><div class="settings-card"><div class="card-symbol">◎</div><h2>Automatic connection</h2><p>Start the new <code>START_STREAMCATCH_WINDOWS.bat</code> file. Keep its terminal window open; StreamCatch connects automatically.</p><div class="auto-connection"><span class="auto-led"></span><div><strong>DOWNLOAD ENGINE</strong><small>localhost:8735 · No pairing key</small></div></div><button id="savePair" class="primary-btn full">↻ Reconnect</button><p id="pairResult" class="result-line" role="status" aria-live="polite"></p><button id="testServer" class="text-link">Test server in browser →</button><p class="micro-hint">HTTP 403 in a normal browser tab is expected. Only the extension may access the engine.</p></div>
-      <div class="settings-card"><div class="card-symbol teal">⚙</div><h2>Preferences</h2><p>Optional tools for media detection and sites requiring a signed-in browser session.</p><label class="field-label" for="cookieBrowser">SIGNED-IN CONTENT (OPTIONAL)</label><select id="cookieBrowser" class="field-select"><option value="none">Do not read cookies (recommended)</option><option value="chrome">Use Chrome session</option><option value="edge">Use Edge session</option><option value="firefox">Use Firefox session</option><option value="brave">Use Brave session</option></select><p class="micro-hint">Opt-in only. The local downloader may read your browser's session cookies for content you're authorized to access.</p><label class="checkbox-row"><input type="checkbox" checked id="captureEnabled"><span><strong>Detect media automatically</strong><small>Scan media requests on websites</small></span></label><div id="enginePath" class="path-info">Folder available when engine connects.</div></div></div>
+      <div class="settings-layout">
+        <div class="settings-card"><div class="card-symbol">◎</div><h2>Automatic connection</h2><p>Start the new <code>START_STREAMCATCH_WINDOWS.bat</code> file. Keep its terminal window open; StreamCatch connects automatically.</p><div class="auto-connection"><span class="auto-led"></span><div><strong>DOWNLOAD ENGINE</strong><small>localhost:8735 · No pairing key</small></div></div><button id="savePair" class="primary-btn full">↻ Reconnect</button><p id="pairResult" class="result-line" role="status" aria-live="polite"></p><button id="testServer" class="text-link">Test server in browser →</button><p class="micro-hint">HTTP 403 in a normal browser tab is expected. Only the extension may access the engine.</p></div>
+        <div class="settings-card"><div class="card-symbol teal">⚙</div><h2>Preferences</h2><p>Optional tools for media detection and sites requiring a signed-in browser session.</p><label class="field-label" for="cookieBrowser">SIGNED-IN CONTENT (OPTIONAL)</label><select id="cookieBrowser" class="field-select"><option value="none">Do not read cookies (recommended)</option><option value="chrome">Use Chrome session</option><option value="edge">Use Edge session</option><option value="firefox">Use Firefox session</option><option value="brave">Use Brave session</option></select><p class="micro-hint">Opt-in only. The local downloader may read your browser's session cookies for content you're authorized to access.</p><label class="checkbox-row"><input type="checkbox" checked id="captureEnabled"><span><strong>Detect media automatically</strong><small>Scan media requests on websites</small></span></label><div id="enginePath" class="path-info">Folder available when engine connects.</div></div>
+        <div class="settings-card author-settings-card">
+          <div class="card-symbol gold">♥</div>
+          <h2>Creator & Support</h2>
+          <p>StreamCatch Universal Video Downloader is crafted by <b>Soahim Rahman Tasin</b> for personal, clean, local-first media archiving.</p>
+          <div class="author-meta-links">
+            <a class="author-profile-link" href="https://www.facebook.com/soahim.rahman.tasin17/" target="_blank" rel="noopener noreferrer">
+              <span>👤 Facebook: <b>Soahim Rahman Tasin</b> ↗</span>
+            </a>
+            <a class="author-donate-button" href="https://www.supportkori.com/soahimrahmantasin17" target="_blank" rel="noopener noreferrer">
+              <span>☕ Support / Donate via Support Kori ↗</span>
+            </a>
+            <button id="checkUpdateSettingsBtn" class="primary-btn full" style="margin-top:10px;">↻ Check for latest updates</button>
+            <p id="updateCheckStatus" class="micro-hint" style="text-align:center;margin-top:5px;"></p>
+          </div>
+        </div>
+      </div>
     </section>
-    <footer class="footer"><span>STREAMCATCH <i>·</i> DOWNLOADER STUDIO</span><span>MADE FOR YOUR OWN MEDIA</span></footer>
+    <footer class="footer">
+      <span>STREAMCATCH <i>·</i> DOWNLOADER STUDIO</span>
+      <span>Created by <a href="https://www.facebook.com/soahim.rahman.tasin17/" target="_blank" rel="noopener noreferrer" style="color:#b29eff;text-decoration:none;font-weight:700;">Soahim Rahman Tasin</a></span>
+      <a href="https://www.supportkori.com/soahimrahmantasin17" target="_blank" rel="noopener noreferrer" style="color:#ffd889;text-decoration:none;font-weight:700;">☕ Support / Donation ↗</a>
+    </footer>
   </main>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>

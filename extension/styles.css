@@ -177,3 +177,55 @@ body[data-mode="popup"] .action-row{bottom:-20px}
 .job-details-toggle{font-size:10px;margin-top:10px;color:#9dabca;overflow-wrap:anywhere}
 .job-details-toggle summary{cursor:pointer;color:#c8b6ff;user-select:none}
 .job-details-toggle p{margin:8px 0 0;line-height:1.5;max-height:120px;overflow:auto;color:#8494ae}
+
+/* Update Pill in Topbar */
+.update-pill { display:flex;align-items:center;gap:6px;padding:4px 9px;border:1px solid #7157e9;border-radius:20px;background:linear-gradient(135deg,rgba(113,87,233,0.3),rgba(68,218,178,0.15));color:#fff;font-size:10px; }
+.update-pill-text { font-weight:750;color:#ddd2ff; }
+.update-pill-btn { padding:3px 7px;border-radius:5px;background:#7157e9;border:1px solid #8f77ff;color:#fff;font-size:9px;font-weight:750;cursor:pointer; }
+.update-pill-btn:hover { background:#866efb; }
+.update-pill-outline { padding:3px 7px;border-radius:5px;background:transparent;border:1px solid #7157e9;color:#d5c7ff;font-size:9px;font-weight:750;cursor:pointer; }
+.update-pill-outline:hover { background:#7157e933; }
+
+/* Update Alert Banner in Main View */
+.update-alert-banner { display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;margin-bottom:15px;border:1px solid #7157e9;border-radius:12px;background:linear-gradient(135deg,#231c42,#1a1835);box-shadow:0 4px 18px rgba(113,87,233,0.25); }
+.update-banner-info { display:flex;flex-direction:column;gap:3px; }
+.update-banner-info strong { font-size:12px;color:#fff;letter-spacing:-.2px; }
+.update-banner-info span { font-size:10px;color:#b2a3eb; }
+.update-banner-actions { display:flex;gap:7px; }
+.update-btn-action { padding:7px 11px;border-radius:7px;background:#7157e9;border:1px solid #8e7bf5;color:#fff;font-size:10px;font-weight:750;cursor:pointer;white-space:nowrap; }
+.update-btn-action:hover { background:#866efb; }
+.update-btn-link { padding:7px 11px;border-radius:7px;background:transparent;border:1px solid #7157e9;color:#d5c7ff;font-size:10px;font-weight:750;cursor:pointer;white-space:nowrap; }
+.update-btn-link:hover { background:#7157e933; }
+
+/* Form Card Creator Credit Bar */
+.creator-credit-bar { display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;padding-top:11px;border-top:1px solid #28334c;font-size:10px;color:#7e8da9; }
+.creator-credit-bar a { color:#a995ff;text-decoration:none;font-weight:750; }
+.creator-credit-bar a:hover { text-decoration:underline;color:#c9bcff; }
+.credit-donate-btn { padding:4px 9px;border-radius:6px;background:#292014;border:1px solid #6b5329;color:#ffd889!important;font-size:9.5px;font-weight:750;white-space:nowrap; }
+.credit-donate-btn:hover { background:#382c1a;border-color:#8a6c38;text-decoration:none!important; }
+
+/* Sidebar Update & Creator box */
+.sidebar-update-box { margin-top:12px;padding:10px 12px;border:1px solid #7157e9;border-radius:10px;background:#1e1a38;display:flex;flex-direction:column;gap:5px; }
+.sidebar-update-title { font-size:10px;color:#fff; }
+.sidebar-update-sub { font-size:9px;color:#b2a3eb; }
+.sidebar-update-actions { display:flex;gap:5px;margin-top:3px; }
+.sidebar-btn-reload { flex:1;padding:4px;border-radius:5px;background:#7157e9;border:1px solid #8e7bf5;color:#fff;font-size:8.5px;font-weight:750;cursor:pointer; }
+.sidebar-btn-get { flex:1;padding:4px;border-radius:5px;background:transparent;border:1px solid #7157e9;color:#d5c7ff;font-size:8.5px;font-weight:750;cursor:pointer; }
+
+.sidebar-author-box { margin-top:12px;padding:10px 12px;border:1px solid #29344f;border-radius:10px;background:#121829;display:flex;flex-direction:column;gap:5px; }
+.sidebar-author-label { font-size:9px;color:#7f90ae; }
+.sidebar-author-label a { color:#a995ff;text-decoration:none;font-weight:750; }
+.sidebar-author-label a:hover { color:#c7baff;text-decoration:underline; }
+.sidebar-donate-link { display:inline-block;padding:5px 7px;border-radius:6px;background:#2b2214;border:1px solid #664f26;color:#ffd889;font-size:8.5px;font-weight:750;text-decoration:none;text-align:center; }
+.sidebar-donate-link:hover { background:#3a2f1b;color:#ffe4a8;border-color:#856832; }
+.check-update-link { border:0;background:transparent;width:100%;text-align:center;margin-top:7px;color:#7081a2;font-size:9px;cursor:pointer;padding:4px; }
+.check-update-link:hover { color:#a9bfe0; }
+
+/* Settings View Author Card */
+.card-symbol.gold { background:linear-gradient(135deg,#e3b754,#9f7a26);color:#191206;box-shadow:0 4px 18px rgba(227,183,84,0.2); }
+.author-settings-card { background:linear-gradient(160deg,#1c192d,#121727);border-color:#483f70; }
+.author-meta-links { display:flex;flex-direction:column;gap:9px;margin-top:14px; }
+.author-profile-link { display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border:1px solid #3d4a6c;border-radius:9px;background:#162035;color:#e8eeff;text-decoration:none;font-size:11px; }
+.author-profile-link:hover { background:#1e2c49;border-color:#5c6f9e; }
+.author-donate-button { display:flex;align-items:center;justify-content:center;padding:11px 14px;border:1px solid #735928;border-radius:9px;background:#292013;color:#ffd889;text-decoration:none;font-size:11px;font-weight:750; }
+.author-donate-button:hover { background:#3b2e1b;border-color:#9a7837;color:#ffe4a8; }
