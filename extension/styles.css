@@ -229,3 +229,9 @@ body[data-mode="popup"] .action-row{bottom:-20px}
 .author-profile-link:hover { background:#1e2c49;border-color:#5c6f9e; }
 .author-donate-button { display:flex;align-items:center;justify-content:center;padding:11px 14px;border:1px solid #735928;border-radius:9px;background:#292013;color:#ffd889;text-decoration:none;font-size:11px;font-weight:750; }
 .author-donate-button:hover { background:#3b2e1b;border-color:#9a7837;color:#ffe4a8; }
+
+/* Start Engine Buttons */
+.start-engine-pill-btn { display:flex;align-items:center;gap:5px;padding:6px 11px;border-radius:20px;border:1px solid #44dab2;background:linear-gradient(135deg,#18332f,#102421);color:#55f0c5;font-size:9.5px;font-weight:780;cursor:pointer;box-shadow:0 0 12px rgba(68,218,178,0.18);white-space:nowrap; }
+.start-engine-pill-btn:hover { background:linear-gradient(135deg,#234742,#17332f);color:#79fbe4;border-color:#6effda; }
+.sidebar-start-engine-btn { width:100%;margin-top:8px;padding:8px 6px;border-radius:8px;border:1px solid #44dab2;background:#142d29;color:#52f0c5;font-size:9.5px;font-weight:780;cursor:pointer;text-align:center; }
+.sidebar-start-engine-btn:hover { background:#1c3c37;color:#79fbe4; }

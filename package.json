@@ -14,6 +14,9 @@
     "build_ui.py",
     "START_STREAMCATCH_WINDOWS.bat",
     "START_STREAMCATCH_MAC_LINUX.sh",
+    "SETUP_AUTO_START_WINDOWS.bat",
+    "STOP_STREAMCATCH_WINDOWS.bat",
+    "DISABLE_AUTO_START_WINDOWS.bat",
     "LICENSE",
     "README.md"
   ],

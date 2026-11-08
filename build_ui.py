@@ -21,6 +21,7 @@ html='''<!doctype html>
     </nav>
     <div class="sidebar-bottom">
       <div id="sideConnection" class="connection"><span class="pulse"></span><span id="sideConnectionText">Checking engine</span></div>
+      <button class="sidebar-start-engine-btn" id="startEngineSidebarBtn" style="display:none;" title="Start local engine process">🚀 Start Engine</button>
       <div id="sidebarUpdateBox" class="sidebar-update-box" style="display:none;">
         <div class="sidebar-update-title">🚀 <b>Update Available</b></div>
         <div class="sidebar-update-sub">v<span id="updateVersionSidebar"></span> is ready</div>
@@ -46,6 +47,7 @@ html='''<!doctype html>
           <button id="updateReloadBtnPill" class="update-pill-btn" title="Reload extension in Chrome">Reload</button>
           <button id="updateGetBtnPill" class="update-pill-outline" title="Open GitHub release">Get</button>
         </div>
+        <button id="startEngineTopBtn" class="start-engine-pill-btn" style="display:none;" title="Launch local downloader engine">🚀 Start Engine</button>
         <span id="engineStatus" class="status-pill"><span class="status-dot"></span><span>Checking</span></span>
         <button id="openSidePanel" class="pin-button" title="Open the fixed Chrome side panel">▣ <span>Fixed panel</span></button>
       </div>
@@ -84,7 +86,16 @@ html='''<!doctype html>
             </div>
           </div>
         </div>
-        <div class="support-column"><div class="side-card"><span class="eyebrow">QUICK ACTIONS</span><h3>More ways to download</h3><button class="action-tile" data-route="bulk"><span class="tile-icon">▤</span><span><strong>Bulk downloader</strong><small>Queue up to 100 links at once</small></span><b>→</b></button><button class="action-tile" data-route="detected"><span class="tile-icon cyan">◈</span><span><strong>Find video files</strong><small>Detect playable files on this tab</small></span><b>→</b></button></div><div class="engine-card"><div class="eyebrow">LOCAL DOWNLOAD ENGINE</div><strong id="engineCardTitle">Checking connection…</strong><p id="engineCardMessage">Looking for your download engine.</p><button class="text-link" id="engineCardAction" data-route="settings">View connection →</button></div></div>
+        <div class="support-column">
+          <div class="side-card"><span class="eyebrow">QUICK ACTIONS</span><h3>More ways to download</h3><button class="action-tile" data-route="bulk"><span class="tile-icon">▤</span><span><strong>Bulk downloader</strong><small>Queue up to 100 links at once</small></span><b>→</b></button><button class="action-tile" data-route="detected"><span class="tile-icon cyan">◈</span><span><strong>Find video files</strong><small>Detect playable files on this tab</small></span><b>→</b></button></div>
+          <div class="engine-card">
+            <div class="eyebrow">LOCAL DOWNLOAD ENGINE</div>
+            <strong id="engineCardTitle">Checking connection…</strong>
+            <p id="engineCardMessage">Looking for your download engine.</p>
+            <button id="startEngineHomeBtn" class="primary-btn full" style="margin-top:10px;display:none;">🚀 Start Engine</button>
+            <button class="text-link" id="engineCardAction" data-route="settings">View connection →</button>
+          </div>
+        </div>
       </div>
     </section>
     <section class="view" id="view-bulk">
@@ -110,7 +121,19 @@ html='''<!doctype html>
     <section class="view" id="view-settings">
       <div class="page-heading compact"><div class="heading-kicker">PREFERENCES</div><h1>Settings<span>.</span></h1><p>Local-first. No account or pairing code needed.</p></div>
       <div class="settings-layout">
-        <div class="settings-card"><div class="card-symbol">◎</div><h2>Automatic connection</h2><p>Start the new <code>START_STREAMCATCH_WINDOWS.bat</code> file. Keep its terminal window open; StreamCatch connects automatically.</p><div class="auto-connection"><span class="auto-led"></span><div><strong>DOWNLOAD ENGINE</strong><small>localhost:8735 · No pairing key</small></div></div><button id="savePair" class="primary-btn full">↻ Reconnect</button><p id="pairResult" class="result-line" role="status" aria-live="polite"></p><button id="testServer" class="text-link">Test server in browser →</button><p class="micro-hint">HTTP 403 in a normal browser tab is expected. Only the extension may access the engine.</p></div>
+        <div class="settings-card">
+          <div class="card-symbol">◎</div>
+          <h2>Automatic connection</h2>
+          <p>StreamCatch connects to <code>localhost:8735</code> without pairing keys. The engine can start automatically on boot or from the button below.</p>
+          <div class="auto-connection"><span class="auto-led"></span><div><strong>DOWNLOAD ENGINE</strong><small>localhost:8735 · Auto Connect</small></div></div>
+          <div class="engine-control-actions" style="display:flex;gap:7px;margin-top:10px;">
+            <button id="startEngineSettingsBtn" class="primary-btn" style="flex:1;">🚀 Start Engine</button>
+            <button id="savePair" class="outline-btn" style="flex:1;">↻ Reconnect</button>
+          </div>
+          <p id="pairResult" class="result-line" role="status" aria-live="polite"></p>
+          <button id="testServer" class="text-link">Test server in browser →</button>
+          <p class="micro-hint">HTTP 403 in a normal browser tab is expected. Only the extension may access the engine.</p>
+        </div>
         <div class="settings-card"><div class="card-symbol teal">⚙</div><h2>Preferences</h2><p>Optional tools for media detection and sites requiring a signed-in browser session.</p><label class="field-label" for="cookieBrowser">SIGNED-IN CONTENT (OPTIONAL)</label><select id="cookieBrowser" class="field-select"><option value="none">Do not read cookies (recommended)</option><option value="chrome">Use Chrome session</option><option value="edge">Use Edge session</option><option value="firefox">Use Firefox session</option><option value="brave">Use Brave session</option></select><p class="micro-hint">Opt-in only. The local downloader may read your browser's session cookies for content you're authorized to access.</p><label class="checkbox-row"><input type="checkbox" checked id="captureEnabled"><span><strong>Detect media automatically</strong><small>Scan media requests on websites</small></span></label><div id="enginePath" class="path-info">Folder available when engine connects.</div></div>
         <div class="settings-card author-settings-card">
           <div class="card-symbol gold">♥</div>

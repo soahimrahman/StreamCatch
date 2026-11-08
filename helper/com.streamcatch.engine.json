@@ -1,0 +1,9 @@
+{
+  "name": "com.streamcatch.engine",
+  "description": "StreamCatch Local Downloader Engine Native Host",
+  "path": "native_host.bat",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://fhhkhlchlohgbnokeheoamkpifoiflgb/"
+  ]
+}

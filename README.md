@@ -25,7 +25,7 @@
 
 ## ⚡ Overview
 
-**StreamCatch** bridges the gap between browser convenience and raw downloading power. Unlike sketchy web downloaders crammed with ads, popups, and bandwidth throttling, **StreamCatch runs entirely on your machine**. 
+**StreamCatch** bridges the gap between browser convenience and raw downloading power. Unlike sketchy web downloaders crammed with ads, popups, and bandwidth throttling, **StreamCatch runs entirely on your machine**.
 
 It pairs an elegant, dark-mode **Chromium extension** (Popup, Chrome Side Panel, and Full-Tab Studio Dashboard) with a lightweight, secure **local Python engine** powered by [`yt-dlp`](https://github.com/yt-dlp/yt-dlp) and [`FFmpeg`](https://ffmpeg.org/).
 
@@ -88,6 +88,7 @@ flowchart LR
 ## 🚀 Quick Start Guide
 
 ### Prerequisites
+
 1. **Python 3.8 or higher** installed. *(Ensure "Add python.exe to PATH" was selected during install).*
 2. **Google Chrome 116+**, **Microsoft Edge**, **Brave**, or any Chromium browser supporting Manifest V3.
 
@@ -108,13 +109,15 @@ Or run it on-demand with **`npx`** without even installing:
 npx github:soahimrahman/StreamCatch
 ```
 
-#### Running the CLI:
+#### Running the CLI
+
 Once installed, start the local engine simply by running:
+
 ```bash
 streamcatch
 ```
 
-#### Handy CLI Commands:
+#### Handy CLI Commands
 
 | Command | Action |
 | :--- | :--- |
@@ -142,7 +145,8 @@ npm install
 npm start
 ```
 
-#### Available `npm` Scripts:
+#### Available `npm` Scripts
+
 - `npm install` *(or `npm run setup`)* — Installs and checks `yt-dlp` & `imageio-ffmpeg`.
 - `npm start` — Boots the local engine on `127.0.0.1:8735`.
 - `npm test` — Executes the 8-point automated test suite.
@@ -155,14 +159,33 @@ npm start
 
 If you don't have Node.js or npm installed, use the native launchers:
 
-#### On Windows:
-Double-click:
+#### ⚡ Silent Background Auto-Start & In-Extension 1-Click Launch (Recommended for Windows)
+
+To run StreamCatch completely seamlessly without keeping a command prompt window open:
+
+1. Double-click:
+   ```cmd
+   SETUP_AUTO_START_WINDOWS.bat
+   ```
+2. **What this does:**
+   - **Zero-Fuss Boot:** StreamCatch starts silently in the background whenever your PC turns on.
+   - **In-Extension 1-Click Launch:** Adds a **`🚀 Start Engine`** button right inside the Chrome/Edge extension. If the helper is ever stopped, you can wake it up directly from the browser!
+   - **Completely Invisible:** Runs via silent background VBScript, so no black terminal window stays open on your taskbar.
+3. **To stop the engine anytime:** Double-click `STOP_STREAMCATCH_WINDOWS.bat`.
+4. **To disable auto-start anytime:** Double-click `DISABLE_AUTO_START_WINDOWS.bat`.
+
+#### Normal Console Mode on Windows
+
+If you prefer seeing real-time download logs in a terminal window:
+
 ```cmd
 START_STREAMCATCH_WINDOWS.bat
 ```
 
-#### On macOS & Linux:
+#### On macOS & Linux
+
 Run:
+
 ```bash
 chmod +x START_STREAMCATCH_MAC_LINUX.sh helper/START_MAC_LINUX.sh
 ./START_STREAMCATCH_MAC_LINUX.sh
@@ -186,7 +209,7 @@ chmod +x START_STREAMCATCH_MAC_LINUX.sh helper/START_MAC_LINUX.sh
 
 ---
 
-### 🎬 Start Downloading!
+### 🎬 Start Downloading
 
 1. Click the **StreamCatch** icon in your toolbar.
 2. The indicator will show **Engine online** with a green pulse.
@@ -262,23 +285,29 @@ StreamCatch/
 StreamCatch includes built-in diagnostic tools to help identify problems quickly:
 
 ### 1. "Curl (28) Connection Timed Out"
+
 - **Meaning:** Your computer could not establish a TCP connection to the website's media server within 25 seconds.
 - **Cause:** Network firewalls, DNS blocks, ISP filtering, VPN conflicts, or temporary outage on the destination server.
 - **Fix:** Run `npm run troubleshoot` (or `helper/CHECK_SITE_CONNECTION_WINDOWS.bat`), enter the domain, and review the DNS and TCP 443 handshake report.
 
 ### 2. "HTTP 403 Forbidden" When Opening `http://127.0.0.1:8735/health` in a Tab
+
 - **This is expected and normal!**
 - The helper enforces strict Origin and Header verification (`X-StreamCatch-Client`). Ordinary web pages and browser tabs cannot access the engine. An HTTP 403 proves that the local engine is online and secured against unauthorized local web scripts.
 
 ### 3. Port 8735 Already in Use
+
 - If an older instance of the helper is already running, close its terminal window or run `helper/TROUBLESHOOT_WINDOWS.bat` to see which Process ID (PID) owns port 8735.
 
 ### 4. Updating Extractor Engines
+
 Websites frequently modify their streaming formats. Keep `yt-dlp` current by running:
+
 ```bash
 streamcatch --setup
 # or: npm run setup
 ```
+
 *(or on Windows: `helper\UPDATE_ENGINE_WINDOWS.bat`)*
 
 ---
@@ -296,12 +325,15 @@ streamcatch --setup
 ## 🧪 Development & Testing
 
 Run the automated test suite via npm:
+
 ```bash
 npm test
 ```
+
 *(or directly with Python: `python -m unittest discover -s tests -v`)*
 
 If you modify the UI in `build_ui.py`, recompile the template across `popup.html`, `sidepanel.html`, and `dashboard.html`:
+
 ```bash
 npm run build
 ```
@@ -311,6 +343,7 @@ npm run build
 ## 📜 Legal & Ethical Usage
 
 StreamCatch is provided for personal archiving, educational research, and downloading media content that you own or have explicit permission to save.
+
 - StreamCatch **does not circumvent DRM**, bypass paywalls, or decrypt encrypted content.
 - Always respect copyright laws and the terms of service of any website you interact with.
 

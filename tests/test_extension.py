@@ -14,6 +14,7 @@ class TestExtensionIntegrity(unittest.TestCase):
         self.assertEqual(data.get('manifest_version'), 3)
         self.assertEqual(data.get('author'), 'Soahim Rahman Tasin')
         self.assertIn('alarms', data.get('permissions', []))
+        self.assertIn('nativeMessaging', data.get('permissions', []))
         self.assertIn('https://raw.githubusercontent.com/soahimrahman/StreamCatch/*', data.get('host_permissions', []))
 
         # Check background script exists
@@ -46,6 +47,15 @@ class TestExtensionIntegrity(unittest.TestCase):
             self.assertIn('Soahim Rahman Tasin', content, f"{filename} should credit Soahim Rahman Tasin")
             self.assertIn('supportkori.com/soahimrahmantasin17', content, f"{filename} should contain donation link")
             self.assertIn('updateReloadBtn', content, f"{filename} should contain reload update button")
+            self.assertIn('startEngine', content, f"{filename} should contain start engine button")
+
+    def test_launcher_scripts_exist(self):
+        self.assertTrue((ROOT / 'SETUP_AUTO_START_WINDOWS.bat').exists(), "SETUP_AUTO_START_WINDOWS.bat must exist")
+        self.assertTrue((ROOT / 'STOP_STREAMCATCH_WINDOWS.bat').exists(), "STOP_STREAMCATCH_WINDOWS.bat must exist")
+        self.assertTrue((ROOT / 'helper' / 'start_silent.vbs').exists(), "start_silent.vbs must exist")
+        self.assertTrue((ROOT / 'helper' / 'stop_engine.bat').exists(), "stop_engine.bat must exist")
+        self.assertTrue((ROOT / 'helper' / 'com.streamcatch.engine.json').exists(), "Native host manifest must exist")
 
 if __name__ == '__main__':
     unittest.main()
+

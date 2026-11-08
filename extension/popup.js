@@ -35,10 +35,65 @@ function setEngine(online,info={}){
   $('sideConnection').classList.toggle('online',online);$('sideConnection').classList.toggle('offline',!online);
   $('sideConnectionText').textContent=online?'Engine connected':'Engine disconnected';
   $('engineCardTitle').textContent=online?'Ready to download':'Engine not connected';
-  $('engineCardMessage').textContent=online?'Your downloads are processed locally on this computer.':'Start the new Windows helper to connect automatically.';
+  $('engineCardMessage').textContent=online?'Your downloads are processed locally on this computer.':'Start the engine directly below or use SETUP_AUTO_START_WINDOWS.bat.';
   $('engineCardAction').dataset.route=online?'downloads':'settings';
   $('engineCardAction').textContent=online?'View download activity →':'Connection settings →';
   if(info.folder)$('enginePath').textContent='Downloads: '+info.folder;
+
+  const startBtns = [$('startEngineTopBtn'), $('startEngineHomeBtn'), $('startEngineSettingsBtn'), $('startEngineSidebarBtn')];
+  startBtns.forEach(btn => {
+    if (btn) btn.style.display = online ? 'none' : (btn.id === 'startEngineTopBtn' ? 'flex' : 'block');
+  });
+}
+let isStartingEngine = false;
+async function startEngineProcess(){
+  if(isStartingEngine || state.engineOnline) return;
+  isStartingEngine = true;
+  toast('Starting StreamCatch engine in the background...');
+
+  const startBtns = [$('startEngineTopBtn'), $('startEngineHomeBtn'), $('startEngineSettingsBtn'), $('startEngineSidebarBtn')];
+  startBtns.forEach(b => { if(b) b.textContent = '⏳ Starting...'; });
+
+  // 1. Try Native Messaging (Zero browser prompts)
+  try {
+    if (chrome.runtime?.sendNativeMessage) {
+      chrome.runtime.sendNativeMessage('com.streamcatch.engine', { action: 'start' }, () => {
+        if (chrome.runtime.lastError) {
+          // Native messaging not configured yet
+        }
+      });
+    }
+  } catch(e) {}
+
+  // 2. Try custom protocol fallback (streamcatch://start)
+  try {
+    const frame = document.createElement('iframe');
+    frame.style.display = 'none';
+    frame.src = 'streamcatch://start';
+    document.body.appendChild(frame);
+    setTimeout(() => frame.remove(), 2500);
+  } catch(e) {}
+
+  // 3. Fast poll until online
+  let attempts = 0;
+  const pollInterval = setInterval(async () => {
+    attempts++;
+    const ok = await checkEngine(false);
+    if (ok) {
+      clearInterval(pollInterval);
+      isStartingEngine = false;
+      showConnectionResult(true);
+      toast('🚀 StreamCatch engine connected and ready!');
+      startBtns.forEach(b => { if(b) b.textContent = '🚀 Start Engine'; });
+      return;
+    }
+    if (attempts >= 14) { // ~7 seconds
+      clearInterval(pollInterval);
+      isStartingEngine = false;
+      startBtns.forEach(b => { if(b) b.textContent = '🚀 Start Engine'; });
+      toast('Engine not started. Double-click SETUP_AUTO_START_WINDOWS.bat once to configure.');
+    }
+  }, 500);
 }
 async function api(path,method='GET',body=null){
   const controller=new AbortController();const tid=setTimeout(()=>controller.abort(),18000);
@@ -400,6 +455,11 @@ async function init(){
   ['checkUpdateBtn', 'checkUpdateSettingsBtn'].forEach(id => {
     const el = $(id);
     if (el) el.addEventListener('click', () => handleCheckForUpdates(true));
+  });
+
+  ['startEngineTopBtn', 'startEngineHomeBtn', 'startEngineSettingsBtn', 'startEngineSidebarBtn'].forEach(id => {
+    const el = $(id);
+    if (el) el.addEventListener('click', startEngineProcess);
   });
 
   await Promise.all([checkEngine().then(showConnectionResult),loadTab()]);await refreshActivity();renderBulkCount();
