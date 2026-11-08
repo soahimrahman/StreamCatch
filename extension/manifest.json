@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "StreamCatch \u2014 Universal Video Downloader",
+  "short_name": "StreamCatch",
+  "version": "1.2.1",
+  "description": "Download permitted videos, playlists and bulk URL batches with format controls and a persistent side panel.",
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "storage",
+    "downloads",
+    "webRequest",
+    "sidePanel"
+  ],
+  "host_permissions": [
+    "<all_urls>",
+    "http://127.0.0.1:8735/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "StreamCatch",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
+  },
+  "options_page": "dashboard.html",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAksvGjQudjqWoCHBTS7VSPdD0rRhJ150xTif9pQ4eWORrngxFjjhFgfUXkb1sSVbkB/6649cl6+LCugETXvdivnHj9j93pZD/iM0mb+wxYj8ioOw8TEl9+i3QxI6BVcKw3yaBuX4BfRjNpQVykwyCzlAQ4I7/GrKyouBYytHWUEfRSbmz6fN2i7WtFYofPHf+nQhbWNTggdjn4fsAr8i4SoJF2GqmNV9iFnGC/lBFHVrqsbY8yOHND1iVE1NUhgpHHMcabfmiHjN6j8H2172jDQYBik33acY6lXU9odhn4zJpodyjBvgXc5y1F61782Mq6bznbhrnD/O/KpdnW8rHCQIDAQAB",
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "minimum_chrome_version": "116"
+}
