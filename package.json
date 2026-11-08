@@ -1,0 +1,37 @@
+{
+  "name": "streamcatch",
+  "version": "1.2.1",
+  "description": "StreamCatch — Universal Video, Audio, Playlist & Bulk Media Downloader Studio",
+  "main": "helper/server.py",
+  "scripts": {
+    "setup": "node scripts/setup.js",
+    "postinstall": "node scripts/setup.js",
+    "start": "node scripts/start.js",
+    "start:windows": "START_STREAMCATCH_WINDOWS.bat",
+    "start:posix": "sh START_STREAMCATCH_MAC_LINUX.sh",
+    "build": "python build_ui.py",
+    "test": "python -m unittest discover -s tests -v",
+    "troubleshoot": "python helper/check_connection.py"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/soahimrahman/StreamCatch.git"
+  },
+  "keywords": [
+    "streamcatch",
+    "video-downloader",
+    "yt-dlp",
+    "ffmpeg",
+    "audio-extractor",
+    "playlist-downloader",
+    "bulk-downloader",
+    "chrome-extension",
+    "side-panel"
+  ],
+  "author": "Soahim Rahman",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/soahimrahman/StreamCatch/issues"
+  },
+  "homepage": "https://github.com/soahimrahman/StreamCatch#readme"
+}

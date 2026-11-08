@@ -12,6 +12,7 @@
 <p align="center">
   <a href="https://github.com/soahimrahman/StreamCatch/releases"><img src="https://img.shields.io/badge/version-v1.2.1-7157e9?style=for-the-badge&logo=semver&logoColor=white" alt="Version 1.2.1" /></a>
   <a href="https://developer.chrome.com/docs/extensions/mv3/intro/"><img src="https://img.shields.io/badge/Manifest-V3-44dab2?style=for-the-badge&logo=googlechrome&logoColor=black" alt="Manifest V3" /></a>
+  <a href="package.json"><img src="https://img.shields.io/badge/npm-automated%20setup-CB3837?style=for-the-badge&logo=npm&logoColor=white" alt="npm Support" /></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.8+-3776ab?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.8+" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="MIT License" /></a>
   <a href="https://github.com/soahimrahman/StreamCatch/actions"><img src="https://img.shields.io/badge/Tests-Passing-brightgreen?style=for-the-badge&logo=githubactions&logoColor=white" alt="CI Status" /></a>
@@ -85,41 +86,59 @@ flowchart LR
 ## 🚀 Quick Start Guide
 
 ### Prerequisites
-1. **Python 3.8 or higher** installed. Check via `python --version` or `py -3 --version`. *(On Windows, check "Add python.exe to PATH" during installation).*
-2. **Google Chrome 116+**, **Microsoft Edge**, **Brave**, or any Chromium-based browser supporting Manifest V3.
+1. **Python 3.8 or higher** installed. *(Check "Add python.exe to PATH" during installation).*
+2. **Google Chrome 116+**, **Microsoft Edge**, **Brave**, or any Chromium browser supporting Manifest V3.
+3. *(Optional)* **Node.js & npm** for automated one-command installation and running.
 
 ---
 
-### Step 1: Start the Local Engine
+### Method A: Automated Setup with `npm` (Recommended)
+
+If you have Node.js / npm installed, StreamCatch can be installed and launched with two simple commands:
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/soahimrahman/StreamCatch.git
+cd StreamCatch
+
+# 2. Automatically install all dependencies (yt-dlp, FFmpeg, etc.)
+npm install
+
+# 3. Launch the download engine
+npm start
+```
+
+> [!TIP]
+> `npm install` automatically triggers the setup script, detects your Python runtime (`py -3`, `python3`, or `python`), and installs all required media packages.
+
+#### Available `npm` Commands:
+
+| Command | Action |
+| :--- | :--- |
+| `npm install` *(or `npm run setup`)* | Automatically installs/verifies `yt-dlp` and `imageio-ffmpeg` dependencies |
+| `npm start` | Launches the local download engine on `http://127.0.0.1:8735` |
+| `npm test` | Runs the full 8-point automated test suite with simulated extractors |
+| `npm run build` | Recompiles UI templates from `build_ui.py` across popup, side panel, and dashboard |
+| `npm run troubleshoot` | Runs the interactive network reachability, DNS & TLS handshake probe |
+
+---
+
+### Method B: Native One-Click Launchers (No Node.js Required)
+
+If you don't use npm, use the native launchers:
 
 #### On Windows:
 Double-click:
 ```cmd
 START_STREAMCATCH_WINDOWS.bat
 ```
-*This script automatically installs/updates dependencies (`yt-dlp` and `imageio-ffmpeg`) and starts the local engine on `http://127.0.0.1:8735`.* Keep the command window open while downloading.
+*Automatically checks pip dependencies, updates `yt-dlp`, and starts the engine on port 8735.*
 
 #### On macOS & Linux:
-Open a terminal in the project directory and run:
+Run:
 ```bash
 chmod +x START_STREAMCATCH_MAC_LINUX.sh helper/START_MAC_LINUX.sh
 ./START_STREAMCATCH_MAC_LINUX.sh
-```
-
-You will see:
-```text
-=================================================================
-  STREAMCATCH v1.2.1  /  LOCAL DOWNLOAD ENGINE
-=================================================================
-  STATUS:     SERVER RUNNING - AUTO CONNECT ENABLED
-  Address:    http://127.0.0.1:8735
-  Pairing:    NOT REQUIRED
-  Features:   PLAYLISTS / BULK DOWNLOADS / EXTRA FORMATS
-  Downloads:  C:\Users\<You>\Downloads\StreamCatch
-  yt-dlp:     READY
-  FFmpeg:     READY
-  Ctrl+C stops the helper.
-=================================================================
 ```
 
 ---
@@ -169,6 +188,9 @@ StreamCatch/
 ├── .github/
 │   └── workflows/
 │       └── ci.yml                     # Multi-OS CI workflow (Ubuntu, Windows, macOS)
+├── scripts/                           # Cross-platform Node / npm automation
+│   ├── setup.js                       # Auto-detects Python & installs pip requirements
+│   └── start.js                       # Cross-platform engine runner
 ├── extension/                         # Chromium Extension (Manifest V3)
 │   ├── manifest.json                  # Extension metadata, permissions & fixed key
 │   ├── background.js                  # Background service worker & network request sniffer
@@ -192,6 +214,7 @@ StreamCatch/
 ├── tests/
 │   └── test_local_api.py              # Mocked integration test suite for engine endpoints
 ├── build_ui.py                        # Single-source HTML generator for extension views
+├── package.json                       # npm automated scripts & project metadata
 ├── START_STREAMCATCH_WINDOWS.bat      # Root Windows launcher
 ├── START_STREAMCATCH_MAC_LINUX.sh     # Root macOS/Linux launcher
 ├── .gitignore                         # Complete Git ignore definitions
@@ -208,7 +231,7 @@ StreamCatch includes built-in diagnostic tools to help identify problems quickly
 ### 1. "Curl (28) Connection Timed Out"
 - **Meaning:** Your computer could not establish a TCP connection to the website's media server within 25 seconds.
 - **Cause:** Network firewalls, DNS blocks, ISP filtering, VPN conflicts, or temporary outage on the destination server.
-- **Fix:** Run `helper/CHECK_SITE_CONNECTION_WINDOWS.bat` (or `python helper/check_connection.py`), enter the domain, and review the DNS and TCP 443 handshake report.
+- **Fix:** Run `npm run troubleshoot` (or `helper/CHECK_SITE_CONNECTION_WINDOWS.bat`), enter the domain, and review the DNS and TCP 443 handshake report.
 
 ### 2. "HTTP 403 Forbidden" When Opening `http://127.0.0.1:8735/health` in a Tab
 - **This is expected and normal!**
@@ -219,10 +242,10 @@ StreamCatch includes built-in diagnostic tools to help identify problems quickly
 
 ### 4. Updating Extractor Engines
 Websites frequently modify their streaming formats. Keep `yt-dlp` current by running:
-```cmd
-helper\UPDATE_ENGINE_WINDOWS.bat
+```bash
+npm run setup
 ```
-*(or `pip install --upgrade yt-dlp imageio-ffmpeg`)*
+*(or on Windows: `helper\UPDATE_ENGINE_WINDOWS.bat`)*
 
 ---
 
@@ -238,16 +261,15 @@ helper\UPDATE_ENGINE_WINDOWS.bat
 
 ## 🧪 Development & Testing
 
-Run the full local engine unit test suite (runs with simulated extractors without contacting external media hosts):
-
+Run the automated test suite via npm:
 ```bash
-python -m unittest discover -s tests -v
+npm test
 ```
+*(or directly with Python: `python -m unittest discover -s tests -v`)*
 
 If you modify the UI in `build_ui.py`, recompile the template across `popup.html`, `sidepanel.html`, and `dashboard.html`:
-
 ```bash
-python build_ui.py
+npm run build
 ```
 
 ---
